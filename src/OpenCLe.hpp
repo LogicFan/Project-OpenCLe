@@ -1,6 +1,7 @@
 #ifndef OPENCLE
 #define OPENCLE
 
+#include <functional>
 #include <iostream>
 #include <list>
 #include <memory>
@@ -18,7 +19,7 @@ class OpenCLe final {
     class Task;
     class Data;
     class Code;
-    class Denpendency;
+    class Dependency;
     OpenCLe();
     OpenCLe(OpenCLe const &other);
     OpenCLe(OpenCLe &&other);
@@ -49,7 +50,7 @@ class OpenCLe::Code final {
 
   public:
     Code(std::string s);
-}
+};
 
 class OpenCLe::Dependency final {
     std::list<Task *> depList_;
