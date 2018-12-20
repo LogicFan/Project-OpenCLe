@@ -6,6 +6,13 @@
 #include <memory>
 #include <string>
 
+/**
+ * class OpenCLe is a singleton object. Underlining 
+ * implementation is OpenCL. When a task is pushed, 
+ * OpenCLe will automatic decide when and which devices
+ * run the task.
+ */
+
 class OpenCLe final {
   public:
     class Task;
