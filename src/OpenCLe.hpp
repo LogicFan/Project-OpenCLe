@@ -7,8 +7,8 @@
 #include <string>
 
 /**
- * class OpenCLe is a singleton object. Underlining 
- * implementation is OpenCL. When a task is pushed, 
+ * class OpenCLe is a singleton object. Underlining
+ * implementation is OpenCL. When a task is pushed,
  * OpenCLe will automatic decide when and which devices
  * run the task.
  */
@@ -68,5 +68,6 @@ std::ostream &operator<<(std::ostream &out, OpenCLe::Data rhs);
 std::ostream &operator<<(std::ostream &out, OpenCLe::Code rhs);
 std::ostream &operator<<(std::ostream &out, OpenCLe::Dependency rhs);
 std::ostream &operator<<(std::ostream &out, OpenCLe::Task rhs);
+std::ostream &operator<<(std::ostream &out, OpenCLe);
 
 #endif
