@@ -51,22 +51,22 @@ class OpenCLe::Code final {
     Code(std::string s);
 }
 
-class OpenCLe::Denpendency final {
+class OpenCLe::Dependency final {
     std::list<Task *> depList_;
 
   public:
-    Denpendency(std::list<Task *> l);
+    Dependency(std::list<Task *> l);
 };
 
 class OpenCLe::Task final {
   public:
     using Fn = std::function<void(Data)>;
-    Task(Data const &d, Code const &c, Denpendency const &dp, Fn callBack);
+    Task(Data const &d, Code const &c, Dependency const &dp, Fn callBack);
 };
 
-std::ostream &operator<<(std::ostream &out, OpenCLe::Data);
-std::ostream &operator<<(std::ostream &out, OpenCLe::Code);
-std::ostream &operator<<(std::ostream &out, OpenCLe::Denpendency);
-std::ostream &operator<<(std::ostream &out, OpenCLe::Task);
+std::ostream &operator<<(std::ostream &out, OpenCLe::Data rhs);
+std::ostream &operator<<(std::ostream &out, OpenCLe::Code rhs);
+std::ostream &operator<<(std::ostream &out, OpenCLe::Dependency rhs);
+std::ostream &operator<<(std::ostream &out, OpenCLe::Task rhs);
 
 #endif
