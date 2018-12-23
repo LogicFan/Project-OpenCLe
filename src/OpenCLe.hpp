@@ -10,9 +10,14 @@
 class OpenCLe final {
   public:
     class Task;
+    class MemOps;
+    class Kernel;
+    class Function;
+    
     class Memory;
-    class Code;
     class Dependency;
+    class Device; 
+
     OpenCLe();
     OpenCLe(OpenCLe const &other);
     OpenCLe(OpenCLe &&other);
