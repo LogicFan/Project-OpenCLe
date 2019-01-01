@@ -46,7 +46,7 @@ class queue final {
     void push(T const& value);
     void push(T&& value);
 
-    // Enable if T's constructor is_nothrow_copy_constructible
+    // return T if constructor is_nothrow_copy_constructible, else return void
     std::conditional_t<std::is_nothrow_copy_constructible<T>::value, T, void> pop();
 
     void clear();
