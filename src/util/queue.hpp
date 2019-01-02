@@ -1,53 +1,71 @@
 #ifndef UTIL_QUEUE_HPP
 #define UTIL_QUEUE_HPP
 
-/** we will have two versions of opencle::queue, by using
- * template meta programing, both of then need to achieve
- *  1. multithread-safe for fist thread call push(); second
- * thread call pop(), get()
- *  2. no mutex lock, no automic operation.
- *  3. the size of queue is per-determine at compile time,
- * SIZE is the number of T that can contian.
- *  4. notice: malloc/operator new has global mutex lock,
- * and should not be used after initialization.
- *  5. should provide a method called clear() to clean all
- * resources. Must be multi-thread-safe with one call clear(),
- * other threads call push(), pop(), get().
- *  4. queue is not copy / move constructable / assignable, and
- * you must explicitly delete those methods.
+#include <cstddef>
+#include <type_traits>
+
+/** We will have two versions of opencle::queue, by using
+ *      template meta programing, both need to:
+ *  1. Be multithread-safe for first thread call push();
+ *      second thread call pop(), get()
+ *  2. Have no mutex lock, no atomic operation.
+ *     Note: malloc/operator new has global mutex lock,
+ *      and should not be used after initialization.
+ *  3. The size of queue is per-determined at compile time,
+ *      CAP is the maximum number of T that can contain.
+ *  4. Provide a method called clear() to clean all resources.
+ *      Must be multi-thread-safe with one call clear(),
+ *      other threads call push(), pop(), get().
+ *  5. Not be copy / move constructable / assignable, and
+ *      corresponding methods explicitly deleted.
  */
 
-/* assign to Brad Huang, due on Jan 1 0:00 AM (EST time). */
+// Assigned to Brad Huang.
 
 namespace opencle {
-/* if T's ctor is no throw */
-template <typename T, int SIZE> class queue final {
-  public:
+
+template <typename T, size_t CAP>
+class queue final {
+    T _mem[];
+    size_t _read;
+    size_t _write;
+    size_t _size;
+
+   public:
+    ////// CONSTRUCTOR AND DESTRUCTOR //////
     queue();
+    ~queue();
 
-    void push(T const &other);
-    void push(T &&other);
+    // Delete copy/move constructor/assignments
+    queue(const queue& other) = delete;
+    queue(queue&& other) = delete;
+    queue& operator=(const queue& other) = delete;
+    queue& operator=(queue&& other) = delete;
 
-    T pop();
+    ////// MODIFIERS //////
+    void push(T const& value);
+    void push(T&& value);
+
+    // Enable if T's constructor is_nothrow_copy_constructible
+    std::conditional_t<std::is_nothrow_copy_constructible<T>::value, T, void> pop();
 
     void clear();
+
+    ////// ELEMENT ACCESS //////
+    T& front();
+    T const& front() const;
+    T& back();
+    T const& back() const;
+    T& operator[](size_t pos);
+    T const& operator[](size_t pos) const;
+    T& at(size_t pos);
+    T const& at(size_t pos) const;
+
+    ////// CAPACITY //////
+    bool empty() const;
+    size_t size() const;
 };
 
-/* general version */
-template <typename T, int SIZE> class queue final {
-  public:
-    queue();
-
-    void push(T const &other);
-    void push(T &&other);
-
-    T &get();
-
-    void pop();
-
-    void clear();
-};
-
-} // namespace opencle
+}  // namespace opencle
 
 #endif
