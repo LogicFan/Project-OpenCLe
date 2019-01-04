@@ -1,11 +1,20 @@
 #ifndef UTIL_QUEUE_HPP
 #define UTIL_QUEUE_HPP
 
+// #define UTIL_QUEUE_DEBUG
+// #define UTIL_QUEUE_PRIORITY_FIX
+
 #include <chrono>
 #include <cstddef>
 #include <mutex>
 #include <thread>
 #include <type_traits>
+
+#include <iostream>
+using std::cout;
+using std::endl;
+#ifdef UTIL_QUEUE_DEBUG
+#endif
 
 /** We will have two versions of opencle::queue, by using
  *      template meta programing, both need to:
@@ -30,6 +39,7 @@
 // Assigned to Brad Huang.
 
 using std::conditional_t;
+using std::enable_if_t;
 using std::is_nothrow_copy_constructible;
 using std::mutex;
 
@@ -37,7 +47,9 @@ namespace opencle {
 
 template <typename T, size_t CAP>
 class queue final {
-    T _mem[];
+    struct dummy {};
+
+    T* _mem;
     size_t _read;
     size_t _write;
     size_t _size;
@@ -64,7 +76,9 @@ class queue final {
     void push(T&& value);
 
     // return T if constructor is_nothrow_copy_constructible, else return void
-    conditional_t<is_nothrow_copy_constructible<T>::value, T, void> pop();
+    conditional_t<is_nothrow_copy_constructible<T>::value, T, void> pop() {
+        return pop_top(dummy());
+    }
 
     void clear();
 
@@ -92,6 +106,9 @@ class queue final {
     void low_unlock();
     void high_lock();
     void high_unlock();
+
+    T pop_top(enable_if_t<is_nothrow_copy_constructible<T>::value, dummy> dum);
+    // void pop_top(enable_if_t<!is_nothrow_copy_constructible<T>::value, dummy> dum);
 };
 
 ////// DEFAULT CONSTRUCTOR //////
@@ -109,12 +126,26 @@ queue<T, CAP>::~queue() {
 template <typename T, size_t CAP>
 void queue<T, CAP>::push(T const& value) {
     low_lock();
-    if (size >= CAP) {
-        _write = mod_addr(++_write);
+
+#ifdef UTIL_QUEUE_DEBUG
+    cout << "- Trying to push lvalue " << value << endl;
+#endif
+
+#ifndef UTIL_QUEUE_PRIORITY_FIX
+    if (_size < CAP) {
         _mem[_write] = value;
+        _write = mod_addr(_write + 1);
+        ++_size;
+
+#ifdef UTIL_QUEUE_DEBUG
+        cout << "- Pushed." << endl;
+#endif
+
     } else {
-        throw std::out_of_range("Push failed: size exceeds capacity");
+        throw std::out_of_range("Push failed: size exceeds capacity.");
     }
+#endif
+
     low_unlock();
 }
 
@@ -122,37 +153,90 @@ void queue<T, CAP>::push(T const& value) {
 template <typename T, size_t CAP>
 void queue<T, CAP>::push(T&& value) {
     low_lock();
-    if (size >= CAP) {
-        _write = mod_addr(++_write);
+
+#ifdef UTIL_QUEUE_DEBUG
+    cout << "- Trying to push rvalue " << value << endl;
+#endif
+
+#ifndef UTIL_QUEUE_PRIORITY_FIX
+    if (_size < CAP) {
         _mem[_write] = std::move(value);
+        _write = mod_addr(_write + 1);
+        ++_size;
+
+#ifdef UTIL_QUEUE_DEBUG
+        cout << "- Pushed." << endl;
+#endif
+
     } else {
+        std::cout << "Failed: Pushing " << value << std::endl;
         throw std::out_of_range("Push failed: size exceeds capacity");
     }
+#endif
+
     low_unlock();
 }
 
 ////// POP //////
 template <typename T, size_t CAP>
-conditional_t<is_nothrow_copy_constructible<T>::value, T, void> queue<T, CAP>::pop() {
+T queue<T, CAP>::pop_top(enable_if_t<is_nothrow_copy_constructible<T>::value, dummy> dum) {
     high_lock();
-    if (size > 0) {
-        if (is_nothrow_copy_constructible<T>::value) {
-            T* ret = new T(_mem[_read]);
-            _mem[_read].~T();
-            _read = mod_addr(--_read);
-            high_unlock();
-            return *ret;
-        } else {
-            _mem[_read].~T();
-            _read = mod_addr(--_read);
-            high_unlock();
-            return;
-        }
+
+#ifdef UTIL_QUEUE_DEBUG
+    cout << "- Trying to pop. " << endl;
+#endif
+
+#ifndef UTIL_QUEUE_PRIORITY_FIX
+    if (_size > 0) {
+        T* ret = new T(_mem[_read]);
+        _mem[_read].~T();
+        _read = mod_addr(_read + 1);
+        --_size;
+
+#ifdef UTIL_QUEUE_DEBUG
+        cout << "- Popped " << *ret << endl;
+#endif
+
+        high_unlock();
+
+        return *ret;
     } else {
         high_unlock();
         throw std::out_of_range("Pop failed: queue is empty");
     }
+#else
+    high_unlock();
+#endif
 }
+
+// template <typename T, size_t CAP>
+// void queue<T, CAP>::pop_top(enable_if_t<!is_nothrow_copy_constructible<T>::value, dummy> dum)
+// {
+//     high_lock();
+
+// #ifdef UTIL_QUEUE_DEBUG
+//     cout << "- Trying to pop. " << endl;
+// #endif
+
+// #ifdef UTIL_QUEUE_PRIORITY_FIX
+//     if (_size > 0) {
+//         _mem[_read].~T();
+//         _read = mod_addr(_read + 1);
+//         --_size;
+
+// #ifdef UTIL_QUEUE_DEBUG
+//         cout << "- Popped. " << endl;
+// #endif
+
+//         high_unlock();
+//     } else {
+//         high_unlock();
+//         throw std::out_of_range("Pop failed: queue is empty");
+//     }
+// #else
+//     high_unlock();
+// #endif
+// }
 
 ////// CLEAR //////
 template <typename T, size_t CAP>
@@ -217,7 +301,7 @@ bool queue<T, CAP>::empty() const {
 
 template <typename T, size_t CAP>
 size_t queue<T, CAP>::size() const {
-    return size;
+    return _size;
 }
 
 template <typename T, size_t CAP>
