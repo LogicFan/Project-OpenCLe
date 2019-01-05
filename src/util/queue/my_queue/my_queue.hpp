@@ -10,10 +10,10 @@
 #include <thread>
 #include <type_traits>
 
+#ifdef UTIL_QUEUE_DEBUG
 #include <iostream>
 using std::cout;
 using std::endl;
-#ifdef UTIL_QUEUE_DEBUG
 #endif
 
 /** We will have two versions of opencle::queue, by using
