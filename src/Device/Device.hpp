@@ -1,8 +1,28 @@
 #ifndef DEVICE_DEVICE_HPP
 #define DEVICE_DEVICE_HPP
 
+#include <CL/cl.h>
+
+namespace opencle{
 class Device final
 {
+  private:
+    bool valid_;
+    cl_device_id device_id_;
+
+  public:
+    Device(cl_device_id device_id) : valid_(true), device_id_(device_id)
+    {
+        valid_ = true;
+#ifndef NDEBUG
+        size_t size;
+        clGetDeviceInfo(device_id_, CL_DEVICE_NAME, 0, NULL, &size);
+        char *val = new char[size];
+        clGetDeviceInfo(device_id_, CL_DEVICE_NAME, size, val, NULL);
+        std::cout << "Fetching Device : " << val << std::endl;
+#endif
+    }
 };
+}
 
 #endif
