@@ -2,27 +2,32 @@
 #define DEVICE_PLATFORM_HPP
 
 #include <vector>
+#include <list>
 #include <CL/cl.h>
 #include <assert.h>
 #include <iostream>
 #include "../coredef.hpp"
 
+using std::list;
 using std::vector;
 
 namespace opencle
 {
 
-// class Device;
+class Device;
 
 class Platform final
 {
-  private:
-    cl_platform_id platform_id_;
+private:
+  bool valid_;
+  cl_platform_id platform_id_;
 
-  public:
-    Platform(cl_platform_id platform_id);
+  list<Device> getDeviceListDefault();
 
-    // vector<Device> getDeviceList();
+public:
+  Platform(cl_platform_id platform_id);
+
+  list<Device> getDeviceList();
 };
 
 vector<Platform> getPlatformList();
