@@ -1,8 +1,12 @@
 #include "Device/Platform.hpp"
+#include "Device/Device.hpp"
 
 #include <iostream>
 
 int main() {
     // test Platform.hpp/cpp
-    opencle::getPlatformList();
+    auto vec = opencle::getPlatformList();
+    for(auto &ele : vec) {
+        ele.getDeviceList();
+    }
 }
