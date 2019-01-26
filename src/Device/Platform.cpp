@@ -77,7 +77,8 @@ list<Device> Platform::getDeviceListDefault()
 
     list<Device> deviceList;
 
-    for(unsigned int i = 0; i < deviceNum; ++i) {
+    for (unsigned int i = 0; i < deviceNum; ++i)
+    {
         deviceList.push_back(Device(devices[i]));
     }
 
