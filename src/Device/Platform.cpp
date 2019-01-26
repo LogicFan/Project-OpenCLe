@@ -6,7 +6,7 @@
 namespace opencle
 {
 
-Platform::Platform(cl_platform_id platform_id) : valid_(true), platform_id_(platform_id)
+Platform::Platform(cl_platform_id const &platform_id) : valid_(true), platform_id_(platform_id)
 {
 
 #ifndef NDEBUG

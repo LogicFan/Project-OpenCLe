@@ -25,7 +25,7 @@ private:
   list<Device> getDeviceListDefault();
 
 public:
-  Platform(cl_platform_id platform_id);
+  Platform(cl_platform_id const &platform_id);
 
   list<Device> getDeviceList();
 };
