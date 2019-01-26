@@ -3,10 +3,14 @@
 
 #include <iostream>
 
+using namespace std;
+
 int main() {
     // test Platform.hpp/cpp
     auto vec = opencle::getPlatformList();
     for(auto &ele : vec) {
         ele.getDeviceList();
     }
+    int x;
+    cin >> x; 
 }
