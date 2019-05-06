@@ -30,7 +30,7 @@ void notify(const char *, const void *, size_t, void *) {
 
 namespace opencle {
 
-AMP::AMP(Device_Type type = Device_Type::DEF) {
+AMP::AMP(Device_Type type) {
     ctor_dtor_lock.lock();
 
     static std::vector<Device> processor_list{};

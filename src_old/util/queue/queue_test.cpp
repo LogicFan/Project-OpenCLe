@@ -18,20 +18,20 @@ int main(int argc, char** argv)
 
     // Disable buffering (so that when run in, e.g., Sublime Text, the output appears as it is written)
     std::setvbuf(stdout, nullptr, _IONBF, 0);
-    
+
     std::printf("Running stability test for opencle::queue.\n");
     std::printf("Logging to 'writeLog.txt' and 'readLog.txt'. Press CTRL+C to quit.\n\n");
-    
+
     std::ofstream writeLog("writeLog.txt");
     std::ofstream readLog("readLog.txt");
 
     opencle::queue<unsigned long long, CAP> q;
-    
+
     for (unsigned int i = 0; i < ROUNDS; ++i) {
         writeLog << "---------------------------------\n" << "Test #" << i << std::endl;
         readLog << "---------------------------------\n" << "Test #" << i << std::endl;
         std::printf("Test #%d\n", i);
-        
+
         std::thread writer([&]() {
             unsigned long long delayTimes = 0ULL;
             unsigned long long testSizeTimes = 0ULL;
@@ -41,7 +41,7 @@ int main(int argc, char** argv)
                 if ((j & (1024 * 1024 - 1)) == 0) {
                     writeLog << "  ... iteration " << j << std::endl;
                 }
-                
+
                 // random sleeps
                 if (rdm()) {
                     ++delayTimes;
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
                     readLog << "  ... iteration " << j << std::endl;
                     canLog = false;
                 }
-                
+
                 // test for mutation
                 if (rdm()) {
                     ++mutationTimes;
@@ -147,13 +147,13 @@ int main(int argc, char** argv)
                     << "**********************\n" << std::endl;
             }
         });
-    
+
         writer.join();
         reader.join();
-        
+
         q.clear();
     }
-    
+
     std::printf("All Done.\n");
     return 0;
 }
