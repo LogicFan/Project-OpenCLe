@@ -2,10 +2,10 @@
 
 ## Development guide
 
-![](./UML.png)
+There will be mainly 3 classes, Memory, Task and Core. Every class will use forward-declaration technique.
 
-- OpenCLe: a singleton RAII object. Underlining implementation is OpenCL and contain all necessary recourse for OpenCL. When a Task is pushed, OpenCLe will automatic decide when and which devices run the task.
+Memory: similar to std::shared_ptr, but manage in both host-side memory and device-side memory. A Memory could be either a real memory (either on host-side or device-side, but not both) or a place holder (i.e.). If a Memory is a place holder, then it should point to the Memory that comes from. There also should be private method that transfer memory between different devices (or host). Also the kernel assign number (used for decide copy the memory or not).
 
-- Task: a Task can be either device-side task (called Kernel), host-side task (called Function), or a memory operation.
+Task: stores kernel codes, parameter Memory (non-const and const) and have a method returns the place holder of non-const memory.
 
-- Dependency: the dependency of a task. 
+Core: have two threads, one for user interface and another for schedule the task.
