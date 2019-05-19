@@ -238,7 +238,7 @@ const char *programSource =
     " C[idx] = A[idx] + B[idx]; \n"
     "} \n";
 int main() {
-    constexpr int elements = 2048;
+    constexpr int elements = 24;
     size_t datasize = sizeof(int) * elements;
 
     // Allocate space for input/output host data
