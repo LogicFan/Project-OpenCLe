@@ -295,10 +295,12 @@ int main() {
     // 0,
     //                               NULL, NULL);
 
-    opencle::global_ptr_impl ptrA{A, datasize, free};
-    opencle::global_ptr_impl ptrB{B, datasize, free};
+    // opencle::global_ptr_impl ptrA{A, datasize, free};
+    // opencle::global_ptr_impl ptrB{B, datasize, free};
     // opencle::global_ptr_impl ptrC{datasize};
 
+    cl_mem bufA = clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
+    cl_mem bufB = clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
     cl_mem bufC = clCreateBuffer(context, CL_MEM_WRITE_ONLY, datasize, NULL, &status);
 
     // Create a program with source code
@@ -310,12 +312,16 @@ int main() {
     cl_kernel kernel = clCreateKernel(program, "vecadd", &status);
     // Set the kernel arguments
 
-    std::cout << "A: ";
-    cl_mem bufA = ptrA.to_device(dev);
-    std::cout << "B: ";
-    cl_mem bufB = ptrB.to_device(dev);
-    std::cout << "C: ";
+    // std::cout << "A: ";
+    // cl_mem bufA = ptrA.to_device(dev);
+    // std::cout << "B: ";
+    // cl_mem bufB = ptrB.to_device(dev);
+    // std::cout << "C: ";
     // cl_mem bufC = ptrC.to_device(dev);
+
+    status = clEnqueueWriteBuffer(cmdQueue, bufA, CL_TRUE, 0, datasize, A, 0, NULL, NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, bufB, CL_TRUE, 0, datasize, B, 0, NULL, NULL);
+
 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufA);
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufB);
