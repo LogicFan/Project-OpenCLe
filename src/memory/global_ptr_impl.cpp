@@ -357,7 +357,7 @@ int main() {
     status = clEnqueueReadBuffer(cmdQueue, bufC, CL_TRUE, 0, datasize, C, 0,
                                  NULL, NULL);
 
-    for (int i = 0; i < datasize; ++i) {
+    for (int i = 0; i < elements; ++i) {
         std::cout << *(C + i) << std::endl;
     }
 
