@@ -81,9 +81,11 @@ void *global_ptr_impl::get() {
     this->write_only_ = false;
 
     if (this->host_ptr_) {
+        std::cout << "get, case A" << std::endl;
         // If the memory is on the host-side;
         return this->host_ptr_;
     } else if (this->device_ptr_) {
+        std::cout << "get, case B" << std::endl;
         // If the memory is on the device-side;
 
         // Allocate memory on host-side;
@@ -103,17 +105,18 @@ void *global_ptr_impl::get() {
         if (status == CL_SUCCESS) {
             assert(this->host_ptr_);
 
-            return host_ptr_;
+            return this->host_ptr_;
         } else {
             this->on_device_->valid_ = false;
             throw std::runtime_error{
                 "OpenCL runtime error: Can not enqueue memory buffer!"};
         }
     } else {
+        std::cout << "get, case C" << std::endl;
         this->host_ptr_ = new char[size_];
         this->deleter_ = [](void *ptr) { delete[] static_cast<char *>(ptr); };
 
-        return host_ptr_;
+        return this->host_ptr_;
     }
 }
 
@@ -142,10 +145,14 @@ global_ptr_impl::operator bool() const {
 
 cl_mem global_ptr_impl::to_device(device const &dev) {
     if (&dev == this->on_device_) {
+        std::cout << "to_device, case A" << std::endl;
+
         assert(device_ptr_);
         // If the memory is on the device-side dev
         return device_ptr_;
     } else if (write_only_) {
+        std::cout << "to_device, case B" << std::endl;
+        
         assert(!host_ptr_);
         // If the memory is write only
         this->on_device_ = &dev;
@@ -162,6 +169,8 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
         }
         return device_ptr_;
     } else {
+        std::cout << "to_device, case C" << std::endl;
+
         // If the memory is on the other device
 
         // Enqueue data to host-side
@@ -298,8 +307,11 @@ int main() {
     cl_kernel kernel = clCreateKernel(program, "vecadd", &status);
     // Set the kernel arguments
 
+    std::cout << "A: ";
     cl_mem bufA = ptrA.to_device(dev);
+    std::cout << "B: ";
     cl_mem bufB = ptrB.to_device(dev);
+    std::cout << "C: ";
     cl_mem bufC = ptrC.to_device(dev);
 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufA);
@@ -316,6 +328,7 @@ int main() {
     status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, indexSpaceSize,
                                     workGroupSize, 0, NULL, NULL);
     // Read the device output buffer to the host output array
+    std::cout << "C: ";
     int *C = static_cast<int *>(ptrC.get());
 
     for (int i = 0; i < datasize; ++i) {
