@@ -160,6 +160,7 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
             throw std::runtime_error{
                 "OpenCL runtime error: Can not create memory buffer!"};
         }
+        return device_ptr_;
     } else {
         // If the memory is on the other device
 
@@ -186,6 +187,7 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
         // Clean host-side;
         this->deleter_(this->host_ptr_);
         this->host_ptr_ = nullptr;
+        return device_ptr_;
     }
     assert(false);
     return nullptr;
