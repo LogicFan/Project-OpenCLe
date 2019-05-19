@@ -253,6 +253,7 @@ int main() {
     // Allocate space for input/output host data
     int *A = (int *)malloc(datasize); // Input array
     int *B = (int *)malloc(datasize); // Input array
+    int *C = (int *)malloc(datasize); // Output array
 
     // Initialize the input data
     int i;
@@ -296,7 +297,9 @@ int main() {
 
     opencle::global_ptr_impl ptrA{A, datasize, free};
     opencle::global_ptr_impl ptrB{B, datasize, free};
-    opencle::global_ptr_impl ptrC{datasize};
+    // opencle::global_ptr_impl ptrC{datasize};
+
+    cl_mem bufC = clCreateBuffer(context, CL_MEM_WRITE_ONLY, datasize, NULL, &status);
 
     // Create a program with source code
     cl_program program = clCreateProgramWithSource(
@@ -312,7 +315,7 @@ int main() {
     std::cout << "B: ";
     cl_mem bufB = ptrB.to_device(dev);
     std::cout << "C: ";
-    cl_mem bufC = ptrC.to_device(dev);
+    // cl_mem bufC = ptrC.to_device(dev);
 
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufA);
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufB);
@@ -328,8 +331,10 @@ int main() {
     status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, indexSpaceSize,
                                     workGroupSize, 0, NULL, NULL);
     // Read the device output buffer to the host output array
-    std::cout << "C: ";
-    int *C = static_cast<int *>(ptrC.get());
+    // std::cout << "C: ";
+    // int *C = static_cast<int *>(ptrC.get());
+
+    status = clEnqueueReadBuffer(cmdQueue, bufC, CL_TRUE, 0, datasize, C, 0, NULL, NULL);
 
     for (int i = 0; i < datasize; ++i) {
         std::cout << *(C + i) << std::endl;
