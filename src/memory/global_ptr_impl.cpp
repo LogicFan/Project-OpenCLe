@@ -152,7 +152,7 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
         return device_ptr_;
     } else if (write_only_) {
         std::cout << "to_device, case B" << std::endl;
-        
+
         assert(!host_ptr_);
         // If the memory is write only
         this->on_device_ = &dev;
@@ -247,7 +247,7 @@ const char *programSource =
     " C[idx] = A[idx] + B[idx]; \n"
     "} \n";
 int main() {
-    constexpr int elements = 24;
+    constexpr int elements = 16;
     size_t datasize = sizeof(int) * elements;
 
     // Allocate space for input/output host data
@@ -256,8 +256,7 @@ int main() {
     int *C = (int *)malloc(datasize); // Output array
 
     // Initialize the input data
-    int i;
-    for (i = 0; i < elements; i++) {
+    for (int i = 0; i < elements; i++) {
         A[i] = i;
         B[i] = i;
     }
@@ -265,21 +264,32 @@ int main() {
     cl_int status;
 
     cl_platform_id platform;
-    status = clGetPlatformIDs(1, &platform, NULL);
+    cl_uint num;
+    status = clGetPlatformIDs(0, NULL, &num);
+    if (status == CL_SUCCESS && num > 0) {
+        status = clGetPlatformIDs(1, &platform, NULL);
+    } else {
+        throw std::runtime_error{""};
+    }
 
     cl_device_id device;
-    status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL);
+    status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num);
+    if (status == CL_SUCCESS && num > 0) {
+        status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL);
+    } else {
+        throw std::runtime_error{""};
+    }
 
     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &status);
 
     cl_command_queue cmdQueue =
-        clCreateCommandQueueWithProperties(context, device, 0, &status);
+        clCreateCommandQueue(context, device, NULL, &status);
 
-    opencle::device dev;
-    dev.c_queue_ = cmdQueue;
-    dev.context_ = context;
-    dev.device_ = device;
-    dev.valid_ = true;
+    // opencle::device dev;
+    // dev.c_queue_ = cmdQueue;
+    // dev.context_ = context;
+    // dev.device_ = device;
+    // dev.valid_ = true;
 
     // cl_mem bufA =
     //     clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
@@ -299,9 +309,17 @@ int main() {
     // opencle::global_ptr_impl ptrB{B, datasize, free};
     // opencle::global_ptr_impl ptrC{datasize};
 
-    cl_mem bufA = clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
-    cl_mem bufB = clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
-    cl_mem bufC = clCreateBuffer(context, CL_MEM_WRITE_ONLY, datasize, NULL, &status);
+    cl_mem bufA =
+        clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
+    cl_mem bufB =
+        clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
+    cl_mem bufC =
+        clCreateBuffer(context, CL_MEM_WRITE_ONLY, datasize, NULL, &status);
+
+    status = clEnqueueWriteBuffer(cmdQueue, bufA, CL_TRUE, 0, datasize, A, 0,
+                                  NULL, NULL);
+    status = clEnqueueWriteBuffer(cmdQueue, bufB, CL_TRUE, 0, datasize, B, 0,
+                                  NULL, NULL);
 
     // Create a program with source code
     cl_program program = clCreateProgramWithSource(
@@ -319,10 +337,6 @@ int main() {
     // std::cout << "C: ";
     // cl_mem bufC = ptrC.to_device(dev);
 
-    status = clEnqueueWriteBuffer(cmdQueue, bufA, CL_TRUE, 0, datasize, A, 0, NULL, NULL);
-    status = clEnqueueWriteBuffer(cmdQueue, bufB, CL_TRUE, 0, datasize, B, 0, NULL, NULL);
-
-
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufA);
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufB);
     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufC);
@@ -332,7 +346,7 @@ int main() {
     size_t indexSpaceSize[1], workGroupSize[1];
     // There are 'elements' work-items
     indexSpaceSize[0] = elements;
-    workGroupSize[0] = 256;
+    workGroupSize[0] = 4;
     // Execute the kernel
     status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, indexSpaceSize,
                                     workGroupSize, 0, NULL, NULL);
@@ -340,7 +354,8 @@ int main() {
     // std::cout << "C: ";
     // int *C = static_cast<int *>(ptrC.get());
 
-    status = clEnqueueReadBuffer(cmdQueue, bufC, CL_TRUE, 0, datasize, C, 0, NULL, NULL);
+    status = clEnqueueReadBuffer(cmdQueue, bufC, CL_TRUE, 0, datasize, C, 0,
+                                 NULL, NULL);
 
     for (int i = 0; i < datasize; ++i) {
         std::cout << *(C + i) << std::endl;
@@ -350,8 +365,15 @@ int main() {
     clReleaseKernel(kernel);
     clReleaseProgram(program);
     clReleaseCommandQueue(cmdQueue);
+    clReleaseMemObject(bufA);
+    clReleaseMemObject(bufB);
+    clReleaseMemObject(bufC);
     clReleaseContext(context);
     // free host resouces
+    free(A);
+    free(B);
+    free(C);
+
     return 0;
 }
 #endif
