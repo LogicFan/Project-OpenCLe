@@ -10,13 +10,13 @@
 #include "util/logger/logger.hpp"
 
 // OpenCL C code
-const std::string programSource{
+const char *programSource =
     "__kernel \n"
     "void vecadd(__global int *A, __global int *B, __global int *C) \n"
     "{ \n"
     "   int idx = get_global_id(0); \n"
     "   C[idx] = A[idx] + B[idx]; \n"
-    "} \n"};
+    "} \n";
 
 int main(int argc, char *argv[]) {
     constexpr int element_num = 16;
@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < element_num; ++i) {
         input_1[i] = i;
-        input_2[i] = i;
-        expect[i] = 2 * i;
+        input_2[i] = 4 * i;
+        expect[i] = 5 * i;
     }
 
     cl_int status;
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     status = clGetPlatformIDs(0, NULL, &platform_num);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
-            "OpenCL runtime error:: Cannot initialize platform"};
+            "OpenCL runtime error: Cannot initialize platform"};
     } else if (platform_num == 0) {
         throw std::out_of_range{"Cannot detect platforms"};
     } else {
@@ -51,12 +51,16 @@ int main(int argc, char *argv[]) {
 
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
-            "OpenCL runtime error:: Cannot initialize platform"};
+            "OpenCL runtime error: Cannot initialize platform"};
     }
 
     char platform_name[50];
     status =
         clGetPlatformInfo(platform, CL_PLATFORM_NAME, 50, platform_name, NULL);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot get platform info"};
+    }
 
     logger << "Platform is " << platform_name << std::endl;
 
@@ -65,121 +69,137 @@ int main(int argc, char *argv[]) {
     cl_uint device_num;
 
     status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &device_num);
-
-    return 0;
-}
-
-#if 0
-
-int main()
-{
-    cl_device_id device;
-    status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 0, NULL, &num);
-    if (status == CL_SUCCESS && num > 0)
-    {
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot initialize device"};
+    } else if (device_num == 0) {
+        throw std::out_of_range{"Cannot detect devices"};
+    } else {
         status = clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL);
     }
-    else
-    {
-        throw std::runtime_error{""};
+
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot initialize device"};
     }
 
+    char device_name[50];
+    status = clGetDeviceInfo(device, CL_DEVICE_NAME, 50, device_name, NULL);
+
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot get device info"};
+    }
+
+    logger << "Device is " << device_name << std::endl;
+
+    // initialize context
     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &status);
-
-    cl_command_queue cmdQueue =
-        clCreateCommandQueueWithProperties(context, device, NULL, &status);
-
-    // opencle::device dev;
-    // dev.c_queue_ = cmdQueue;
-    // dev.context_ = context;
-    // dev.device_ = device;
-    // dev.valid_ = true;
-
-    // cl_mem bufA =
-    //     clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
-    // cl_mem bufB =
-    //     clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
-    // cl_mem bufC =
-    //     clCreateBuffer(context, CL_MEM_WRITE_ONLY, datasize, NULL, &status);
-    //
-    // status = clEnqueueWriteBuffer(cmdQueue, bufA, CL_FALSE, 0, datasize, A,
-    // 0,
-    //                               NULL, NULL);
-    // status = clEnqueueWriteBuffer(cmdQueue, bufB, CL_FALSE, 0, datasize, B,
-    // 0,
-    //                               NULL, NULL);
-
-    // opencle::global_ptr_impl ptrA{A, datasize, free};
-    // opencle::global_ptr_impl ptrB{B, datasize, free};
-    // opencle::global_ptr_impl ptrC{datasize};
-
-    cl_mem bufA =
-        clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
-    cl_mem bufB =
-        clCreateBuffer(context, CL_MEM_READ_ONLY, datasize, NULL, &status);
-    cl_mem bufC =
-        clCreateBuffer(context, CL_MEM_WRITE_ONLY, datasize, NULL, &status);
-
-    status = clEnqueueWriteBuffer(cmdQueue, bufA, CL_TRUE, 0, datasize, A, 0,
-                                  NULL, NULL);
-    status = clEnqueueWriteBuffer(cmdQueue, bufB, CL_TRUE, 0, datasize, B, 0,
-                                  NULL, NULL);
-
-    // Create a program with source code
-    cl_program program = clCreateProgramWithSource(
-        context, 1, (const char **)&programSource, NULL, &status);
-    // Build(compile) the program for the device
-    status = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
-    // Create the vector addition kernel
-    cl_kernel kernel = clCreateKernel(program, "vecadd", &status);
-    // Set the kernel arguments
-
-    // std::cout << "A: ";
-    // cl_mem bufA = ptrA.to_device(dev);
-    // std::cout << "B: ";
-    // cl_mem bufB = ptrB.to_device(dev);
-    // std::cout << "C: ";
-    // cl_mem bufC = ptrC.to_device(dev);
-
-    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufA);
-    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufB);
-    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &bufC);
-
-    // Define an incde space of work-items for execution
-    // A work-group size is not required, but can be used.
-    size_t indexSpaceSize[1], workGroupSize[1];
-    // There are 'elements' work-items
-    indexSpaceSize[0] = elements;
-    workGroupSize[0] = 4;
-    // Execute the kernel
-    status = clEnqueueNDRangeKernel(cmdQueue, kernel, 1, NULL, indexSpaceSize,
-                                    workGroupSize, 0, NULL, NULL);
-    // Read the device output buffer to the host output array
-    // std::cout << "C: ";
-    // int *C = static_cast<int *>(ptrC.get());
-
-    status = clEnqueueReadBuffer(cmdQueue, bufC, CL_TRUE, 0, datasize, C, 0,
-                                 NULL, NULL);
-
-    for (int i = 0; i < elements; ++i)
-    {
-        std::cout << *(C + i) << std::endl;
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot initialize context"};
     }
 
-    // Free OpenCL resouces
+    cl_command_queue cmd_queue =
+        clCreateCommandQueueWithProperties(context, device, NULL, &status);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot initialize command queue"};
+    }
+
+    // initialize and allocate device side memory
+    cl_mem input_1_buf = clCreateBuffer(
+        context, CL_MEM_WRITE_ONLY, element_num * sizeof(int), NULL, &status);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot create memory buffer"};
+    }
+    cl_mem input_2_buf = clCreateBuffer(
+        context, CL_MEM_WRITE_ONLY, element_num * sizeof(int), NULL, &status);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot create memory buffer"};
+    }
+    cl_mem output_buf = clCreateBuffer(
+        context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot create memory buffer"};
+    }
+
+    status =
+        clEnqueueWriteBuffer(cmd_queue, input_1_buf, CL_TRUE, 0,
+                             element_num * sizeof(int), input_1, 0, NULL, NULL);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot enqueue data"};
+    }
+    status =
+        clEnqueueWriteBuffer(cmd_queue, input_2_buf, CL_TRUE, 0,
+                             element_num * sizeof(int), input_2, 0, NULL, NULL);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot enqueue data"};
+    }
+
+    // initialize kernel
+    cl_program program = clCreateProgramWithSource(context, 1, &programSource, NULL, &status); 
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot create OpenCL program"};
+    }
+    status = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot compile OpenCL program"};
+    }
+    cl_kernel kernel = clCreateKernel(program, "vecadd", &status);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot create kernel"};
+    }
+
+    // set arguments
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_1_buf);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
+    }
+    status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_2_buf);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
+    }
+    status = clSetKernelArg(kernel, 2, sizeof(cl_mem), &output_buf);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
+    }
+
+    // enqueue kernel
+    size_t index_space_size[1], work_group_size[1];
+    index_space_size[0] = element_num;
+    work_group_size[0] = 4;
+
+    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, index_space_size, work_group_size, 0, NULL, NULL);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot enqueue kernel"};
+    }
+
+    // read result
+    status = clEnqueueReadBuffer(cmd_queue, output_buf, CL_TRUE, 0, element_num * sizeof(int), output, 0, NULL, NULL);
+
+    logger;
+    for (int i = 0; i < element_num; ++i) {
+        std:: cout << output[i] << " "; 
+        assert(expect[i] == output[i]);
+    }
+    std::cout << std::endl;
+
+    // free resources
     clReleaseKernel(kernel);
     clReleaseProgram(program);
-    clReleaseCommandQueue(cmdQueue);
-    clReleaseMemObject(bufA);
-    clReleaseMemObject(bufB);
-    clReleaseMemObject(bufC);
+    clReleaseMemObject(input_1_buf);
+    clReleaseMemObject(input_1_buf);
+    clReleaseMemObject(output_buf);
+    clReleaseCommandQueue(cmd_queue);
     clReleaseContext(context);
-    // free host resouces
-    free(A);
-    free(B);
-    free(C);
+
+    delete[] input_1;
+    delete[] input_2;
+    delete[] output;
 
     return 0;
 }
-
-#endif
