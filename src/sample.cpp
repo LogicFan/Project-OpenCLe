@@ -141,13 +141,16 @@ int main(int argc, char *argv[]) {
     }
 
     // initialize kernel
-    cl_program program = clCreateProgramWithSource(context, 1, &programSource, NULL, &status); 
+    cl_program program =
+        clCreateProgramWithSource(context, 1, &programSource, NULL, &status);
     if (status != CL_SUCCESS) {
-        throw std::runtime_error{"OpenCL runtime error: Cannot create OpenCL program"};
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot create OpenCL program"};
     }
     status = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
     if (status != CL_SUCCESS) {
-        throw std::runtime_error{"OpenCL runtime error: Cannot compile OpenCL program"};
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot compile OpenCL program"};
     }
     cl_kernel kernel = clCreateKernel(program, "vecadd", &status);
     if (status != CL_SUCCESS) {
@@ -173,17 +176,21 @@ int main(int argc, char *argv[]) {
     index_space_size[0] = element_num;
     work_group_size[0] = 4;
 
-    status = clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, index_space_size, work_group_size, 0, NULL, NULL);
+    status =
+        clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, index_space_size,
+                               work_group_size, 0, NULL, NULL);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{"OpenCL runtime error: Cannot enqueue kernel"};
     }
 
     // read result
-    status = clEnqueueReadBuffer(cmd_queue, output_buf, CL_TRUE, 0, element_num * sizeof(int), output, 0, NULL, NULL);
+    status =
+        clEnqueueReadBuffer(cmd_queue, output_buf, CL_TRUE, 0,
+                            element_num * sizeof(int), output, 0, NULL, NULL);
 
     logger;
     for (int i = 0; i < element_num; ++i) {
-        std:: cout << output[i] << " "; 
+        std::cout << output[i] << " ";
         assert(expect[i] == output[i]);
     }
     std::cout << std::endl;
