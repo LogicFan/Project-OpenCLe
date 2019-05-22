@@ -188,12 +188,12 @@ int main(int argc, char *argv[]) {
         clEnqueueReadBuffer(cmd_queue, output_buf, CL_TRUE, 0,
                             element_num * sizeof(int), output, 0, NULL, NULL);
 
-    logger;
+    std::ostream &out = logger;
     for (int i = 0; i < element_num; ++i) {
-        std::cout << output[i] << " ";
+        out << output[i] << " ";
         assert(expect[i] == output[i]);
     }
-    std::cout << std::endl;
+    out << std::endl;
 
     // free resources
     clReleaseKernel(kernel);
