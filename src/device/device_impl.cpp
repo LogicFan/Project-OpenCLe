@@ -1,6 +1,6 @@
+#include <iostream>
 #include <stdexcept>
 #include <utility>
-#include <iostream>
 
 #include "device_impl.hpp"
 
@@ -26,7 +26,8 @@ cl_context get_context(cl_device_id const &dev) {
 
 cl_command_queue get_command_queue(cl_device_id const &dev,
                                    cl_context const &con) {
-    logger("Createing command queue based on device " << dev << " and context " << con << std::endl);
+    logger("Createing command queue based on device " << dev << " and context "
+                                                      << con << std::endl);
     cl_int status;
     cl_command_queue temp =
         clCreateCommandQueueWithProperties(con, dev, NULL, &status);
@@ -39,7 +40,8 @@ cl_command_queue get_command_queue(cl_device_id const &dev,
 }
 
 size_t get_computate_unit(cl_device_id const &dev) {
-    logger("Getting the total available compute unit on device " << dev << std::endl);
+    logger("Getting the total available compute unit on device " << dev
+                                                                 << std::endl);
     cl_int status;
     cl_uint cu_num;
     status = clGetDeviceInfo(dev, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint),
@@ -62,8 +64,9 @@ device_impl::device_impl(cl_device_id const &dev, cl_context const &con,
 }
 
 device_impl::device_impl(cl_device_id const &dev)
-    : device_impl{dev, get_context(device_),
-                  get_command_queue(device_, context_)} {
+    : device_{dev}, context_{get_context(device_)},
+      cmd_queue_{get_command_queue(device_, context_)},
+      cu_total{get_computate_unit(dev)}, valid_{true}, cu_used{0} {
     return;
 }
 
@@ -99,6 +102,8 @@ std::vector<device> device_impl::get_device_list() {
 
     cl_int status;
 
+    logger("Getting Platform" << std::endl);
+
     cl_uint platform_num;
     status = clGetPlatformIDs(0, NULL, &platform_num);
     if (status != CL_SUCCESS) {
@@ -107,6 +112,8 @@ std::vector<device> device_impl::get_device_list() {
     } else if (platform_num == 0) {
         throw std::out_of_range{"Cannot detect platforms"};
     }
+
+    logger("There are " << platform_num << " number of platforms" << std::endl);
 
     std::unique_ptr<cl_platform_id[]> platforms{
         new cl_platform_id[platform_num]};
@@ -117,6 +124,9 @@ std::vector<device> device_impl::get_device_list() {
     }
 
     for (int i = 0; i < platform_num; ++i) {
+        logger("Using platform " << platforms[i] << " to initialize devices"
+                                 << std::endl);
+
         cl_uint device_num;
         status = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL,
                                 &device_num);
@@ -126,6 +136,8 @@ std::vector<device> device_impl::get_device_list() {
         } else if (device_num == 0) {
             throw std::out_of_range{"Cannot detect devices"};
         }
+
+        logger("There are " << device_num << " number of devices" << std::endl);
 
         std::unique_ptr<cl_device_id[]> devices{new cl_device_id[device_num]};
 
@@ -138,6 +150,8 @@ std::vector<device> device_impl::get_device_list() {
         }
 
         for (int j = 0; j < device_num; ++j) {
+            logger("Initializing device " << devices[j] << std::endl);
+
             device_list.emplace_back(new device_impl{devices[j]});
         }
     }
@@ -147,9 +161,10 @@ std::vector<device> device_impl::get_device_list() {
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev) {
     cl_int status;
-    
+
     char device_name[100];
-    status = clGetDeviceInfo(dev.device_, CL_DEVICE_NAME, 100, device_name, NULL);
+    status =
+        clGetDeviceInfo(dev.device_, CL_DEVICE_NAME, 100, device_name, NULL);
 
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
