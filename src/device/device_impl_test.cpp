@@ -44,7 +44,7 @@ void device_impl_test() {
         opencle::device_impl::get_device_list();
 
     for (auto const &dev : device_list) {
-        std::cout << dev;
+        logger(dev << std::endl);
     }
 
     cl_device_id device = (device_list[0])->device_;
