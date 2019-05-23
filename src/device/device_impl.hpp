@@ -34,12 +34,12 @@ class device_impl final {
 
   public:
     device_impl(device_impl const &rhs) = delete;
-    device_impl(device_impl &&rhs);
+    device_impl(device_impl &&rhs) = delete;
 
     ~device_impl();
 
     device_impl &operator=(device_impl const &rhs) = delete;
-    device_impl &operator=(device_impl &&rhs);
+    device_impl &operator=(device_impl &&rhs) = delete;
     bool operator<(device_impl const &rhs) const;
     operator bool();
 
