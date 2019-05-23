@@ -8,6 +8,7 @@
 #include <string>
 
 #include "util/logger/logger.hpp"
+#include "util/core_def.hpp"
 
 // OpenCL C code
 const char *programSource =
@@ -62,7 +63,7 @@ int main(int argc, char *argv[]) {
             "OpenCL runtime error: Cannot get platform info"};
     }
 
-    logger << "Platform is " << platform_name << std::endl;
+    logger("Platform is " << platform_name << std::endl);
 
     // initialize device
     cl_device_id device;
@@ -91,7 +92,7 @@ int main(int argc, char *argv[]) {
             "OpenCL runtime error: Cannot get device info"};
     }
 
-    logger << "Device is " << device_name << std::endl;
+    logger("Device is " << device_name << std::endl);
 
     // initialize context
     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &status);
@@ -188,12 +189,12 @@ int main(int argc, char *argv[]) {
         clEnqueueReadBuffer(cmd_queue, output_buf, CL_TRUE, 0,
                             element_num * sizeof(int), output, 0, NULL, NULL);
 
-    logger;
+    logger("");
     for (int i = 0; i < element_num; ++i) {
-        logger_continue << output[i] << " ";
+        logger_continue(output[i] << " ");
         assert(expect[i] == output[i]);
     }
-    logger_continue << std::endl;
+    logger_continue(std::endl);
 
     // free resources
     clReleaseKernel(kernel);
