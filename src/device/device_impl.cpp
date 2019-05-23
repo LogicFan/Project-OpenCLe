@@ -72,17 +72,17 @@ device_impl::device_impl(cl_device_id const &dev)
     return;
 }
 
-device_impl::device_impl(device_impl &&rhs)
-    : device_{rhs.device_}, context_{rhs.context_},
-      cmd_queue_{rhs.cmd_queue_}, cu_total{rhs.cu_total},
-      valid_{rhs.valid_.load()}, cu_used{rhs.cu_used.load()} {
-    logger("Calling move constructor, creat " << this << " based on " << &rhs
-                                              << std::endl);
-    rhs.device_ = nullptr;
-    rhs.context_ = nullptr;
-    rhs.cmd_queue_ = nullptr;
-    rhs.valid_ = false;
-}
+// device_impl::device_impl(device_impl &&rhs)
+//     : device_{rhs.device_}, context_{rhs.context_},
+//       cmd_queue_{rhs.cmd_queue_}, cu_total{rhs.cu_total},
+//       valid_{rhs.valid_.load()}, cu_used{rhs.cu_used.load()} {
+//     logger("Calling move constructor, creat " << this << " based on " << &rhs
+//                                               << std::endl);
+//     rhs.device_ = nullptr;
+//     rhs.context_ = nullptr;
+//     rhs.cmd_queue_ = nullptr;
+//     rhs.valid_ = false;
+// }
 
 device_impl::~device_impl() {
     logger("Calling destructor, destory " << this << std::endl);
@@ -90,11 +90,11 @@ device_impl::~device_impl() {
     clReleaseContext(context_);
 }
 
-device_impl &device_impl::operator=(device_impl &&rhs) {
-    this->~device_impl();
-    device_impl(std::move(rhs));
-    return *this;
-}
+// device_impl &device_impl::operator=(device_impl &&rhs) {
+//     this->~device_impl();
+//     device_impl(std::move(rhs));
+//     return *this;
+// }
 
 bool device_impl::operator<(device_impl const &rhs) const {
     return !valid_ && cu_total - cu_used < rhs.cu_total - rhs.cu_used;
