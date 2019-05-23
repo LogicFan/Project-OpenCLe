@@ -53,7 +53,11 @@ void device_impl_test() {
     cl_command_queue cmd_queue = (device_list[0])->cmd_queue_;
 
     // Test for operator bool
-    logger(*(device_list[0]));
+    if(*(device_list[0])) {
+        logger("Device returns true" << std::endl);
+    } else {
+        logger("Device returns false" << std::endl);
+    }
 
     // initialize and allocate device side memory
     cl_mem input_1_buf = clCreateBuffer(
@@ -136,7 +140,7 @@ void device_impl_test() {
         clEnqueueReadBuffer(cmd_queue, output_buf, CL_TRUE, 0,
                             element_num * sizeof(int), output, 0, NULL, NULL);
 
-    logger("");
+    logger("The output array is ");
     for (int i = 0; i < element_num; ++i) {
         logger_continue(output[i] << " ");
         assert(expect[i] == output[i]);
