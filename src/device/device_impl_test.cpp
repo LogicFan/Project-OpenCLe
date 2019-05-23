@@ -40,6 +40,7 @@ void device_impl_test() {
 
     cl_int status;
 
+    /** Test for get_device_list() method and constructor */
     std::vector<opencle::device> device_list =
         opencle::device_impl::get_device_list();
 
@@ -50,6 +51,9 @@ void device_impl_test() {
     cl_device_id device = (device_list[0])->device_;
     cl_context context = (device_list[0])->context_;
     cl_command_queue cmd_queue = (device_list[0])->cmd_queue_;
+
+    // Test for operator bool
+    logger(*(device_list[0]));
 
     // initialize and allocate device side memory
     cl_mem input_1_buf = clCreateBuffer(
