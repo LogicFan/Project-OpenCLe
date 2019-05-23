@@ -2,18 +2,23 @@
 
 #include <CL/cl.h>
 #include <atomic>
-#include <vector>
 #include <memory>
+#include <vector>
 
-// #include "../util/core_def.hpp"
+#include "../util/core_def.hpp"
+#include "../util/logger/logger.hpp"
+
+namespace opencle_test {
+void device_impl_test();
+};
 
 namespace opencle {
 class device_impl;
 
 using device = std::unique_ptr<device_impl>;
 
-struct device_impl final {
-  // private:
+class device_impl final {
+    // private:
     cl_device_id device_;
     cl_context context_;
     cl_command_queue cmd_queue_;
@@ -43,6 +48,8 @@ struct device_impl final {
     // void exec(task &&task);
 
     friend std::ostream &operator<<(std::ostream &out, device_impl const &dev);
+
+    friend void ::opencle_test::device_impl_test();
 };
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev);

@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string>
 
-#include "device_impl.hpp"
 #include "../util/logger/logger.hpp"
+#include "device_impl.hpp"
 
 // OpenCL C code
 const char *programSource =
@@ -19,7 +19,11 @@ const char *programSource =
     "   C[idx] = A[idx] + B[idx]; \n"
     "} \n";
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) { opencle_test::device_impl_test(); }
+
+namespace opencle_test {
+
+void device_impl_test() {
     constexpr int element_num = 16;
 
     // allocate space and initialize for input and output host data
@@ -36,16 +40,16 @@ int main(int argc, char *argv[]) {
 
     cl_int status;
 
-    std::vector<opencle::device> device_list = opencle::device_impl::get_device_list();
+    std::vector<opencle::device> device_list =
+        opencle::device_impl::get_device_list();
 
-    for(auto const &dev: device_list) {
+    for (auto const &dev : device_list) {
         std::cout << dev;
     }
 
     cl_device_id device = (device_list[0])->device_;
     cl_context context = (device_list[0])->context_;
     cl_command_queue cmd_queue = (device_list[0])->cmd_queue_;
-
 
     // initialize and allocate device side memory
     cl_mem input_1_buf = clCreateBuffer(
@@ -147,6 +151,6 @@ int main(int argc, char *argv[]) {
     delete[] input_1;
     delete[] input_2;
     delete[] output;
-
-    return 0;
 }
+
+} // namespace opencle_test

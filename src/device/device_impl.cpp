@@ -12,6 +12,7 @@ void pfn_notify(const char *errinfo, const void *private_info, size_t cb,
 }
 
 cl_context get_context(cl_device_id const &dev) {
+    logger("Creating context based on device " << dev << std::endl);
     cl_int status;
     cl_context temp = clCreateContext(NULL, 1, &dev, pfn_notify, NULL, &status);
 
@@ -25,6 +26,7 @@ cl_context get_context(cl_device_id const &dev) {
 
 cl_command_queue get_command_queue(cl_device_id const &dev,
                                    cl_context const &con) {
+    logger("Createing command queue based on device " << dev << " and context " << con << std::endl);
     cl_int status;
     cl_command_queue temp =
         clCreateCommandQueueWithProperties(con, dev, NULL, &status);
@@ -37,6 +39,7 @@ cl_command_queue get_command_queue(cl_device_id const &dev,
 }
 
 size_t get_computate_unit(cl_device_id const &dev) {
+    logger("Getting the total available compute unit on device " << dev << std::endl);
     cl_int status;
     cl_uint cu_num;
     status = clGetDeviceInfo(dev, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint),
