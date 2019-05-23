@@ -60,6 +60,7 @@ device_impl::device_impl(cl_device_id const &dev, cl_context const &con,
                          cl_command_queue const &cmd)
     : device_{dev}, context_{con}, cmd_queue_{cmd},
       cu_total{get_computate_unit(dev)}, valid_{true}, cu_used{0} {
+    logger("Calling 3 parameter constructor, create " << this << std::endl);
     return;
 }
 
@@ -67,6 +68,7 @@ device_impl::device_impl(cl_device_id const &dev)
     : device_{dev}, context_{get_context(device_)},
       cmd_queue_{get_command_queue(device_, context_)},
       cu_total{get_computate_unit(dev)}, valid_{true}, cu_used{0} {
+    logger("Calling 1 parameter constructor, create " << this << std::endl);
     return;
 }
 
@@ -74,6 +76,8 @@ device_impl::device_impl(device_impl &&rhs)
     : device_{rhs.device_}, context_{rhs.context_},
       cmd_queue_{rhs.cmd_queue_}, cu_total{rhs.cu_total},
       valid_{rhs.valid_.load()}, cu_used{rhs.cu_used.load()} {
+    logger("Calling move constructor, creat " << this << " based on " << &rhs
+                                              << std::endl);
     rhs.device_ = nullptr;
     rhs.context_ = nullptr;
     rhs.cmd_queue_ = nullptr;
@@ -81,6 +85,7 @@ device_impl::device_impl(device_impl &&rhs)
 }
 
 device_impl::~device_impl() {
+    logger("Calling destructor, destory " << this << std::endl);
     clReleaseCommandQueue(cmd_queue_);
     clReleaseContext(context_);
 }
