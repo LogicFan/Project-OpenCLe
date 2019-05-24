@@ -53,7 +53,7 @@ void device_impl_test() {
     cl_command_queue cmd_queue = (device_list[0])->cmd_queue_;
 
     // Test for operator bool
-    if(*(device_list[0])) {
+    if (*(device_list[0])) {
         logger("Device returns true" << std::endl);
     } else {
         logger("Device returns false" << std::endl);
@@ -145,7 +145,7 @@ void device_impl_test() {
         logger_continue(output[i] << " ");
         assert(expect[i] == output[i]);
     }
-   logger_continue(std::endl);
+    logger_continue(std::endl);
 
     // free resources
     clReleaseKernel(kernel);
