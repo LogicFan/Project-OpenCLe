@@ -61,19 +61,19 @@ void device_impl_test() {
 
     // initialize and allocate device side memory
     cl_mem input_1_buf = clCreateBuffer(
-        context, CL_MEM_WRITE_ONLY, element_num * sizeof(int), NULL, &status);
+        context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
             "OpenCL runtime error: Cannot create memory buffer"};
     }
     cl_mem input_2_buf = clCreateBuffer(
-        context, CL_MEM_WRITE_ONLY, element_num * sizeof(int), NULL, &status);
+        context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
             "OpenCL runtime error: Cannot create memory buffer"};
     }
     cl_mem output_buf = clCreateBuffer(
-        context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
+        context, CL_MEM_WRITE_ONLY, element_num * sizeof(int), NULL, &status);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
             "OpenCL runtime error: Cannot create memory buffer"};
