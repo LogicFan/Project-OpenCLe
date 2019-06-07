@@ -9,6 +9,7 @@ namespace opencle {
 global_ptr_impl::global_ptr_impl(size_t size)
     : global_ptr_impl{new char[size], size,
                       [](void const *ptr) { delete[] ptr; }} {
+    logger("Calling 1 parameter constructor, construct " << this << std::endl);
     return;
 }
 
@@ -16,6 +17,7 @@ global_ptr_impl::global_ptr_impl(void *ptr, size_t size,
                                  std::function<void(void const *)> deleter)
     : size_{size}, host_ptr_{ptr}, deleter_{deleter}, device_ptr_{nullptr},
       on_device_{nullptr} {
+    logger("Calling 3 parameter constructor, construct " << this << std::endl);
     return;
 }
 
@@ -24,20 +26,25 @@ global_ptr_impl::global_ptr_impl(global_ptr_impl &&rhs)
       device_ptr_{rhs.device_ptr_}, on_device_{rhs.on_device_} {
     rhs.host_ptr_ = nullptr;
     rhs.device_ptr_ = nullptr;
+    logger("Calling move constructor, from " << &rhs << " to " << this << std::endl);
     return;
 }
 
 global_ptr_impl::~global_ptr_impl() {
+    logger("Calling destructor, destory " << this << std::endl);
     if (host_ptr_) {
         deleter_(this->host_ptr_);
+        logger("Release host memory " << host_ptr_ << std::endl);
     }
 
     if (device_ptr_) {
         clReleaseMemObject(this->device_ptr_);
+        logger("Release device memory " << device_ptr_ << std::endl);
     }
 }
 
 global_ptr_impl &global_ptr_impl::operator=(global_ptr_impl &&rhs) {
+    logger("Calling moving assign operator, from " << &rhs << " to " << this << std::endl);
     this->~global_ptr_impl();
 
     new (this) global_ptr_impl(std::move(rhs));
