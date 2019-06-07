@@ -48,6 +48,7 @@ class device_impl final {
     // void exec(task &&task);
 
     friend std::ostream &operator<<(std::ostream &out, device_impl const &dev);
+    friend class global_ptr_impl;
 
     friend void ::opencle_test::device_impl_test();
 };
