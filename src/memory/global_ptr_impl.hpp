@@ -14,7 +14,7 @@ class global_ptr_impl final {
 
     /** host-side memory */
     void *host_ptr_;
-    std::function<void(void *)> deleter_;
+    std::function<void(void const *)> deleter_;
 
     /** device-side memory */
     mutable cl_mem device_ptr_;
@@ -25,7 +25,7 @@ class global_ptr_impl final {
 
     /* do not copy the data */
     global_ptr_impl(void *ptr, size_t size,
-                    std::function<void(void *)> deleter);
+                    std::function<void(void const *)> deleter);
     global_ptr_impl(global_ptr_impl const &rhs) = delete;
     global_ptr_impl(global_ptr_impl &&rhs);
     ~global_ptr_impl();
