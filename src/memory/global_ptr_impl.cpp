@@ -65,7 +65,7 @@ global_ptr_impl &global_ptr_impl::operator=(global_ptr_impl &&rhs) {
 
 void *global_ptr_impl::get() {
     logger("Get memory of " << this << std::endl);
-    if (valid_) {
+    if (valid_ && host_ptr_) {
         if (device_ptr_) {
             logger("Synchronize with device " << on_device_->get()
                                               << std::endl);
@@ -80,9 +80,9 @@ void *global_ptr_impl::get() {
             }
         }
 
-        logger("Return pointer " << device_ptr_ << std::endl);
+        logger("Return pointer " << host_ptr_ << std::endl);
 
-        return device_ptr_;
+        return host_ptr_;
     } else {
         logger("Return nullptr pointer" << std::endl);
         return nullptr;
@@ -92,9 +92,9 @@ void *global_ptr_impl::get() {
 
 void const *global_ptr_impl::get() const {
     logger("Get memory of " << this << std::endl);
-    if (valid_) {
-        logger("Return pointer " << device_ptr_ << std::endl);
-        return device_ptr_;
+    if (valid_ && host_ptr_) {
+        logger("Return pointer " << host_ptr_ << std::endl);
+        return host_ptr_;
     } else {
         logger("Return nullptr pointer" << std::endl);
         return nullptr;
@@ -114,7 +114,7 @@ void *global_ptr_impl::release() {
 
 global_ptr_impl global_ptr_impl::clone() {
     logger("Clone from memory " << this << std::endl);
-    if (valid_) {
+    if (valid_ && host_ptr_) {
         get();
         char *new_ptr = new char[size_];
         memcpy(new_ptr, host_ptr_, size_);
@@ -124,6 +124,8 @@ global_ptr_impl global_ptr_impl::clone() {
         };
 
         return global_ptr_impl(new_ptr, size_, new_deleter);
+    } else if (valid_) {
+        return global_ptr_impl(size_);
     } else {
         return global_ptr_impl();
     }
@@ -131,7 +133,7 @@ global_ptr_impl global_ptr_impl::clone() {
 
 global_ptr_impl global_ptr_impl::clone() const {
     logger("Clone from memory " << this << std::endl);
-    if (valid_) {
+    if (valid_ && host_ptr_) {
         get();
         char *new_ptr = new char[size_];
         memcpy(new_ptr, host_ptr_, size_);
@@ -141,6 +143,8 @@ global_ptr_impl global_ptr_impl::clone() const {
         };
 
         return global_ptr_impl(new_ptr, size_, new_deleter);
+    } else if (valid_) {
+        return global_ptr_impl(size_);
     } else {
         return global_ptr_impl();
     }
