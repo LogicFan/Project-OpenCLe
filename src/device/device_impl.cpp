@@ -71,11 +71,11 @@ device_impl::device_impl(cl_device_id const &dev)
 // }
 
 device_impl::~device_impl() {
-    logger("Destructor, destory " << this << "!");
     clReleaseCommandQueue(cmd_queue_);
     logger("Release command queue " << cmd_queue_ << "!");
     clReleaseContext(context_);
     logger("Release context " << context_ << "!");
+    logger("Destructor, destory " << this << "!");
 }
 
 // device_impl &device_impl::operator=(device_impl &&rhs) {
