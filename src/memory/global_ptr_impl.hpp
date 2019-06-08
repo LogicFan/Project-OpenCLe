@@ -10,6 +10,7 @@ class device;
 
 class global_ptr_impl final {
   private:
+    bool valid_;
     size_t size_;
 
     /** host-side memory */
@@ -21,6 +22,8 @@ class global_ptr_impl final {
     mutable device const *on_device_;
 
   public:
+    global_ptr_impl();
+
     global_ptr_impl(size_t size);
 
     /* do not copy the data */
@@ -38,12 +41,12 @@ class global_ptr_impl final {
     void const *get() const;
 
     void *release();
-    void const *release() const;
 
+    global_ptr_impl clone();
     global_ptr_impl clone() const;
 
     operator bool() const;
-    size_t size();
+    size_t size() const;
 
     /** For device **/
 
