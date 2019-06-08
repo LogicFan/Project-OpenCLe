@@ -8,7 +8,6 @@ int main(int argc, char *argv[]) {
     #endif
     
     logger("This line should print with header if NDEBUG is not defined. ");
-    logger_continue("This line should continue to print is NDEBUG is not defined" << std::endl);
     
     std::cout << "--- END OF TEST ---" << std::endl;
     return 0;
