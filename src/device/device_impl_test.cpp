@@ -142,10 +142,9 @@ void device_impl_test() {
 
     logger("The output array is ");
     for (int i = 0; i < element_num; ++i) {
-        logger_continue(output[i] << " ");
+        logger(output[i]);
         assert(expect[i] == output[i]);
     }
-    logger_continue(std::endl);
 
     // free resources
     clReleaseKernel(kernel);
