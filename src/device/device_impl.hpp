@@ -9,7 +9,7 @@
 #include "../util/logger/logger.hpp"
 
 namespace opencle_test {
-void device_impl_test();
+void test();
 };
 
 namespace opencle {
@@ -50,7 +50,7 @@ class device_impl final {
     friend std::ostream &operator<<(std::ostream &out, device_impl const &dev);
     friend class global_ptr_impl;
 
-    friend void ::opencle_test::device_impl_test();
+    friend void ::opencle_test::test();
 };
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev);

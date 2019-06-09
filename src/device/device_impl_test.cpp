@@ -19,11 +19,11 @@ const char *programSource =
     "   C[idx] = A[idx] + B[idx]; \n"
     "} \n";
 
-int main(int argc, char *argv[]) { opencle_test::device_impl_test(); }
+int main(int argc, char *argv[]) { opencle_test::test(); }
 
 namespace opencle_test {
 
-void device_impl_test() {
+void test() {
     constexpr int element_num = 16;
 
     // allocate space and initialize for input and output host data
