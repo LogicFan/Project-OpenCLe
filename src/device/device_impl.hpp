@@ -14,7 +14,6 @@ void test();
 
 namespace opencle {
 class device_impl;
-
 using device = std::unique_ptr<device_impl>;
 
 class device_impl final {
@@ -28,8 +27,7 @@ class device_impl final {
     mutable std::atomic<bool> valid_;
     mutable std::atomic<size_t> cu_used;
 
-    device_impl(cl_device_id const &dev, cl_context const &con,
-                cl_command_queue const &cmd);
+    device_impl(cl_device_id const &dev, cl_context const &con, cl_command_queue const &cmd);
     device_impl(cl_device_id const &dev);
 
   public:
