@@ -49,14 +49,14 @@ size_t get_computate_unit(cl_device_id const &dev) {
 namespace opencle {
 device_impl::device_impl(cl_device_id const &dev, cl_context const &con, cl_command_queue const &cmd)
     : device_{dev}, context_{con}, cmd_queue_{cmd}, cu_total{get_computate_unit(dev)}, valid_{true}, cu_used{0} {
-    logger("device_id, context & command_queue constructor, create " << this << std::endl);
+    logger("device_id, context & command_queue constructor, create " << this);
     return;
 }
 
 device_impl::device_impl(cl_device_id const &dev)
     : device_{dev}, context_{get_context(device_)},
       cmd_queue_{get_command_queue(device_, context_)}, cu_total{get_computate_unit(dev)}, valid_{true}, cu_used{0} {
-    logger("device_id constructor, create " << this << std::endl);
+    logger("device_id constructor, create " << this);
     return;
 }
 

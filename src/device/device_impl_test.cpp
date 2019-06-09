@@ -45,7 +45,7 @@ void test() {
         opencle::device_impl::get_device_list();
 
     for (auto const &dev : device_list) {
-        logger(dev << std::endl);
+        logger(dev);
     }
 
     cl_device_id device = (device_list[0])->device_;
@@ -54,9 +54,9 @@ void test() {
 
     // Test for operator bool
     if (*(device_list[0])) {
-        logger("Device returns true" << std::endl);
+        logger("Device returns true");
     } else {
-        logger("Device returns false" << std::endl);
+        logger("Device returns false");
     }
 
     // initialize and allocate device side memory
@@ -157,6 +157,8 @@ void test() {
     delete[] input_2;
     delete[] output;
     delete[] expect;
+
+    std::cout << "========== device_impl test pass ==========" << std::endl;
 }
 
 } // namespace opencle_test
