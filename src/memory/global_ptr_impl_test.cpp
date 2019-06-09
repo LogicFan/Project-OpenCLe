@@ -122,6 +122,8 @@ void test() {
     // free resources
     clReleaseKernel(kernel);
     clReleaseProgram(program);
+
+    std::cout << "========== global_ptr_impl test pass ==========" << std::endl;
 }
 
 } // namespace opencle_test
