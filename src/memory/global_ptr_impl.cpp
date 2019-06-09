@@ -61,8 +61,18 @@ global_ptr_impl &global_ptr_impl::operator=(global_ptr_impl &&rhs) {
 }
 
 void *global_ptr_impl::get() {
-    if (valid_ && host_ptr_) {
-        if (device_ptr_) {
+    if (valid_) {
+        if (host_ptr_ && device_ptr_) {
+            cl_int status;
+            status = clEnqueueReadBuffer(on_device_->cmd_queue_, device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
+            if (status != CL_SUCCESS) {
+                throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
+            }
+            logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to host-side!");
+        } else if (host_ptr_) {
+        } else if (device_ptr_) {
+            host_ptr_ = new char[size_];
+            deleter_ = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
             cl_int status;
             status = clEnqueueReadBuffer(on_device_->cmd_queue_, device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
             if (status != CL_SUCCESS) {
