@@ -152,12 +152,11 @@ void test() {
     clReleaseMemObject(input_1_buf);
     clReleaseMemObject(input_1_buf);
     clReleaseMemObject(output_buf);
-    clReleaseCommandQueue(cmd_queue);
-    clReleaseContext(context);
 
     delete[] input_1;
     delete[] input_2;
     delete[] output;
+    delete[] expect;
 }
 
 } // namespace opencle_test
