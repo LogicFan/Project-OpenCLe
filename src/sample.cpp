@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
             "OpenCL runtime error: Cannot get platform info"};
     }
 
-    logger("Platform is " << platform_name << std::endl);
+    logger("Platform is " << platform_name);
 
     // initialize device
     cl_device_id device;
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
             "OpenCL runtime error: Cannot get device info"};
     }
 
-    logger("Device is " << device_name << std::endl);
+    logger("Device is " << device_name);
 
     // initialize context
     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &status);
@@ -189,12 +189,11 @@ int main(int argc, char *argv[]) {
         clEnqueueReadBuffer(cmd_queue, output_buf, CL_TRUE, 0,
                             element_num * sizeof(int), output, 0, NULL, NULL);
 
-    logger("");
     for (int i = 0; i < element_num; ++i) {
-        logger_continue(output[i] << " ");
+        std::cout << output[i] << ", ";
         assert(expect[i] == output[i]);
     }
-    logger_continue(std::endl);
+    std::cout << std::endl;
 
     // free resources
     clReleaseKernel(kernel);
@@ -208,6 +207,9 @@ int main(int argc, char *argv[]) {
     delete[] input_1;
     delete[] input_2;
     delete[] output;
+    delete[] expect;
+
+    std::cout << "========== basic test pass ==========" << std::endl;
 
     return 0;
 }
