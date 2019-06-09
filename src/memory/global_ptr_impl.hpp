@@ -19,7 +19,7 @@ class global_ptr_impl final {
 
     /** device-side memory */
     mutable cl_mem device_ptr_;
-    mutable device const *on_device_;
+    mutable device_impl const *on_device_;
 
   public:
     global_ptr_impl();
