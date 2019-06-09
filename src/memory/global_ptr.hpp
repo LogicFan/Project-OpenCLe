@@ -1,14 +1,15 @@
+#include <iostream>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
-#include <iostream>
 #include <vector>
 
 namespace opencle {
-template <typename T, typename X = std::enable_if<std::is_pod_v<T>>> class global_ptr {
-    public:
-    global_ptr() { std::cout << typeid(T).name() << std::endl; }
+template <typename T, typename X = void> class global_ptr;
+
+template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> {
+  public:
+    global_ptr() { std::cout << std::is_pod_v<T> << std::endl; }
 };
 } // namespace opencle
 
-int main() { opencle::global_ptr<std::vector<int>> a; }
