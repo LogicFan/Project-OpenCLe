@@ -151,7 +151,7 @@ global_ptr_impl global_ptr_impl::clone() const {
 
 global_ptr_impl::operator bool() const { return valid_ && host_ptr_; }
 
-size_t global_ptr_impl::size() const { return size(); }
+size_t global_ptr_impl::size() const { return size_; }
 
 cl_mem global_ptr_impl::to_device(device const &dev) {
     logger("Move memory to device " << dev.get() << "!");
