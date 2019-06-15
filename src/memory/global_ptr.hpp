@@ -1,12 +1,12 @@
 #include "../util/logger/logger.hpp"
 #include "global_ptr_impl.hpp"
+#include <initializer_list>
 #include <iostream>
 #include <memory.h>
 #include <memory>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
-#include <initializer_list>
 
 namespace {
 class dummy {};
@@ -49,14 +49,14 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         logger("Non-ownership ptr constructor, create " << this);
         return;
     }
-    
+
     global_ptr(std::initializer_list<T> const &il) {
         size_t size = il.size();
         T *new_ptr = new T[size];
         std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
-        
+
         int i = 0;
-        for(auto const &e: il) {
+        for (auto const &e : il) {
             new_ptr[i] = e;
             ++i;
         }
@@ -70,9 +70,9 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         size_t size = container.size();
         T *new_ptr = new T[size];
         std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
-        
+
         int i = 0;
-        for(auto const &e: container) {
+        for (auto const &e : container) {
             new_ptr[i] = e;
             ++i;
         }
@@ -88,12 +88,12 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
 
     global_ptr &operator=(global_ptr const &rhs) = delete;
     global_ptr &operator=(global_ptr &&rhs) = default;
-    
+
     T &operator[](size_t index) {
         T *ptr = static_cast<T *>(impl_->get());
         return ptr[index];
     }
-    
+
     T &at(size_t index) {
         if (index < impl_->size()) {
             return operator[](index);
@@ -103,7 +103,7 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
     }
 
     size_t size() {
-        if(impl_) {
+        if (impl_) {
             return impl_->size() / sizeof(T);
         } else {
             return 0;
@@ -112,33 +112,65 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
     }
 
     T *allocate() {
-        if(!impl_) {
+        if (!impl_) {
             throw std::runtime_error{"Unknown size of global_ptr!"};
-        } else if(impl_->operator bool()) {
+        } else if (impl_->operator bool()) {
             throw std::runtime_error{"Cannot reallocate memory!"};
         } else {
             size_t size = impl_->size();
             T *new_ptr = new T[size];
             std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
-            
+
             impl_->~global_ptr_impl();
-            new (impl_.get()) global_ptr_impl{new_ptr, size, deleter};
+            new (impl_.get()) global_ptr{new_ptr, size, deleter};
+
             return new_ptr;
         }
         return nullptr;
     }
 
-    // T *release();
+    T *release() {
+        if (impl_) {
+            T *ptr = static_cast<T *>(impl_->release());
+            impl_.reset();
+            return ptr;
+        } else {
+            return nullptr;
+        }
+    }
 
-    // void reset();
-    // void reset(size_t size);
-    // void reset(std::unique_ptr<T[]> ptr, size_t size);
-    // void reset(T *ptr, size_t size);
-    // template <typename U> void reset(U &&container);
+    void reset() { impl_.reset(); }
 
-    // void swap(global_ptr &rhs);
+    void reset(size_t size) {
+        impl_->~global_ptr_impl();
+        new (impl_.get()) global_ptr{size};
+    }
 
-    // T *get();
+    void reset(std::unique_ptr<T[]> ptr, size_t size) {
+        impl_->~global_ptr_impl();
+        new (impl_.get()) global_ptr{ptr, size};
+    }
+
+    void reset(T *ptr, size_t size) {
+        impl_->~global_ptr_impl();
+        new (impl_.get()) global_ptr{ptr, size};
+    }
+
+    void swap(global_ptr &rhs) { std::swap(impl_, rhs.impl_); }
+
+    global_ptr clone() {
+        global_ptr new_global_ptr;
+        new_global_ptr.impl_ = std::unique_ptr<global_ptr_impl>{impl_->clone};
+        return new_global_ptr;
+    }
+
+    T *get() {
+        if (impl_) {
+            return static_cast<T *>(impl_->get());
+        } else {
+            return nullptr;
+        }
+    }
 };
 
 } // namespace opencle
