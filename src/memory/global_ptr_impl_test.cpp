@@ -119,6 +119,13 @@ void test() {
         assert(expect[i] == output[i]);
     }
 
+    opencle::global_ptr_impl copy_gp = output_gp.clone();
+    int *copy = static_cast<int *>(copy_gp.get());
+    for (int i = 0; i < element_num; ++i) {
+        logger(copy[i]);
+        assert(copy[i] == output[i]);
+    }
+
     // free resources
     clReleaseKernel(kernel);
     clReleaseProgram(program);
