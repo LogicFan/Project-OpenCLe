@@ -17,16 +17,24 @@ template <typename T, typename X = void> class global_ptr;
 
 template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> final {
   private:
-    std::unique_ptr<global_ptr_impl> impl_;
+    mutable std::unique_ptr<global_ptr_impl> impl_;
+
+    global_ptr *nxt;
+    global_ptr *pre;
 
   public:
     global_ptr() {
+        impl_ = std::make_unique<global_ptr_impl>();
+        nxt = nullptr;
+        pre = nullptr;
         logger("Default constructor, create " << this);
         return;
     }
 
-    global_ptr(size_t size) : impl_{std::make_unique<global_ptr_impl>(size * sizeof(T))} {
+    global_ptr(size_t size) {
         impl_ = std::make_unique<global_ptr_impl>(size * sizeof(T));
+        nxt = nullptr;
+        pre = nullptr;
         logger("Size constructor, create " << this);
         return;
     }
@@ -35,7 +43,10 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         std::function<void(void const *)> deleter = [del = ptr.get_deleter()](void const *p) {
             del(reinterpret_cast<T *>(const_cast<void *>(p)));
         };
+
         impl_ = std::make_unique<global_ptr_impl>(ptr.release(), size * sizeof(T), deleter);
+        nxt = nullptr;
+        pre = nullptr;
         logger("Unique ptr constructor, create " << this);
         return;
     }
@@ -46,6 +57,8 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         memcpy(new_ptr, ptr, size * sizeof(T));
 
         impl_ = std::make_unique<global_ptr_impl>(new_ptr, size * sizeof(T), deleter);
+        nxt = nullptr;
+        pre = nullptr;
         logger("Non-ownership ptr constructor, create " << this);
         return;
     }
@@ -62,6 +75,8 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         }
 
         impl_ = std::make_unique<global_ptr_impl>(new_ptr, size * sizeof(T), deleter);
+        nxt = nullptr;
+        pre = nullptr;
         logger("Initializer list constructor, create " << this);
         return;
     }
@@ -78,6 +93,8 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         }
 
         impl_ = std::make_unique<global_ptr_impl>(new_ptr, size * sizeof(T), deleter);
+        nxt = nullptr;
+        pre = nullptr;
         logger("Container constructor, create " << this);
         return;
     }
@@ -103,16 +120,11 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
     }
 
     size_t size() {
-        if (impl_) {
-            return impl_->size() / sizeof(T);
-        } else {
-            return 0;
-        }
-        return 0;
+        return impl_->size() / sizeof(T);
     }
 
     T *allocate() {
-        if (!impl_) {
+        if (impl_->size() == 0) {
             throw std::runtime_error{"Unknown size of global_ptr!"};
         } else if (impl_->operator bool()) {
             throw std::runtime_error{"Cannot reallocate memory!"};
@@ -122,7 +134,7 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
             std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
 
             impl_->~global_ptr_impl();
-            new (impl_.get()) global_ptr{new_ptr, size, deleter};
+            new (impl_.get()) global_ptr_impl{new_ptr, size, deleter};
 
             return new_ptr;
         }
@@ -139,37 +151,36 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         }
     }
 
-    void reset() { impl_.reset(); }
+    void reset() { 
+        ~global_ptr();
+        new (this) global_ptr{};
+    }
 
     void reset(size_t size) {
-        impl_->~global_ptr_impl();
-        new (impl_.get()) global_ptr{size};
+        ~global_ptr();
+        new (this) global_ptr{size};
     }
 
     void reset(std::unique_ptr<T[]> ptr, size_t size) {
-        impl_->~global_ptr_impl();
-        new (impl_.get()) global_ptr{ptr, size};
+        ~global_ptr();
+        new (this) global_ptr{ptr, size};
     }
 
     void reset(T *ptr, size_t size) {
-        impl_->~global_ptr_impl();
-        new (impl_.get()) global_ptr{ptr, size};
+        ~global_ptr();
+        new (this) global_ptr{ptr, size};
     }
 
     void swap(global_ptr &rhs) { std::swap(impl_, rhs.impl_); }
 
     global_ptr clone() {
         global_ptr new_global_ptr;
-        new_global_ptr.impl_ = std::unique_ptr<global_ptr_impl>{impl_->clone};
+        new_global_ptr.impl_ = std::make_unique<global_ptr_impl>(impl_->clone());
         return new_global_ptr;
     }
 
     T *get() {
-        if (impl_) {
-            return static_cast<T *>(impl_->get());
-        } else {
-            return nullptr;
-        }
+        return static_cast<T *>(impl_->get());
     }
 };
 
