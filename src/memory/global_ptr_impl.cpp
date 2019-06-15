@@ -36,6 +36,10 @@ global_ptr_impl::global_ptr_impl(void *ptr, size_t size, std::function<void(void
 global_ptr_impl::global_ptr_impl(global_ptr_impl &&rhs)
     : valid_{rhs.valid_}, size_{rhs.size_}, host_ptr_{rhs.host_ptr_}, deleter_{rhs.deleter_}, device_ptr_{rhs.device_ptr_},
       on_device_{rhs.on_device_} {
+    rhs.host_ptr_ = nullptr;
+    rhs.deleter_ = nullptr;
+    rhs.device_ptr_ = nullptr;
+    rhs.on_device_ = nullptr;
     logger("Move constructor, from " << &rhs << " to " << this << "!");
     return;
 }
