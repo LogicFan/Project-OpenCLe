@@ -14,12 +14,21 @@ global_ptr_impl::global_ptr_impl()
 
 global_ptr_impl::global_ptr_impl(size_t size)
     : valid_{true}, size_{size}, host_ptr_{nullptr}, deleter_{nullptr}, device_ptr_{nullptr}, on_device_{nullptr} {
+    if(size == 0) {
+        throw std::runtime_error{"size cannot be 0!"};
+    }
     logger("Size constructor, " << this << "!");
     return;
 }
 
 global_ptr_impl::global_ptr_impl(void *ptr, size_t size, std::function<void(void const *)> deleter)
     : valid_{true}, size_{size}, host_ptr_{ptr}, deleter_{deleter}, device_ptr_{nullptr}, on_device_{nullptr} {
+    if(size == 0) {
+        throw std::runtime_error{"size cannot be 0!"};
+    } else if (ptr == nullptr) {
+        throw std::runtime_error{"ptr cannot be nullptr"};
+    }
+    
     logger("Host-side pointer constructor, " << this << "!");
     return;
 }
