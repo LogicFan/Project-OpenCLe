@@ -29,7 +29,7 @@ int main() {
     for(int i = 0; i < 20; ++i) {
         p4[i] = i * 3;
     }
-    global_ptr<int[]> g4{p4, 20};
+    global_ptr<int[]> g4(p4, 20);
     delete p4;
     for(int i = 0; i < 20; ++i) {
         std::cout << g4[i] << ", ";
@@ -90,10 +90,12 @@ int main() {
     std::cout << "g9: ";
     global_ptr<int[]> g9 = g4.clone();
     for(int i = 0; i < 20; ++i) {
-        std::cout << g8[i] << ", ";
+        std::cout << "(" << g9[i] << ", ";
+        std::cout << g4[i] << "), ";
         assert(g9[i] == g4[i]);
     }
     std::cout << std::endl;
+    
     g9[2] = 70;
     assert(g9[2] == 70);
     assert(g4[2] = 6);
