@@ -74,6 +74,7 @@ int main() {
 
     }
 
+    std::cout << "g8: ";
     global_ptr<int[]> g8(20);
     int *p8 = g8.allocate();
     for(int i = 0; i < 20; ++i) {
@@ -85,4 +86,17 @@ int main() {
     }
     std::cout << std::endl;
     std::cout << g8.size() << std::endl;
+
+    std::cout << "g9: ";
+    global_ptr<int[]> g9 = g4.clone();
+    for(int i = 0; i < 20; ++i) {
+        std::cout << g8[i] << ", ";
+        assert(g9[i] == g4[i]);
+    }
+    std::cout << std::endl;
+    g9[2] = 70;
+    assert(g9[2] == 70);
+    assert(g4[2] = 6);
+
+    
 }
