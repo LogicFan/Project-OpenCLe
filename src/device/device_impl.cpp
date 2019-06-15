@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <utility>
 
+#define NDEBUG
+
 #include "device_impl.hpp"
 
 namespace {
