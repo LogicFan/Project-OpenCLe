@@ -26,8 +26,9 @@ class global_ptr_impl final {
     mutable cl_mem device_ptr_;
     mutable device_impl const *on_device_;
 
-  public:
     global_ptr_impl();
+
+  public:
 
     global_ptr_impl(size_t size);
 
