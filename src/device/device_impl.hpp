@@ -30,7 +30,7 @@ class device_impl final {
     device_impl(cl_device_id const &dev, cl_context const &con, cl_command_queue const &cmd);
     device_impl(cl_device_id const &dev);
 
-  public:
+public:
     device_impl(device_impl const &rhs) = delete;
     device_impl(device_impl &&rhs) = delete;
 

@@ -20,7 +20,10 @@ const char *programSource =
     "   C[idx] = A[idx] + B[idx]; \n"
     "} \n";
 
-int main(int argc, char *argv[]) { opencle_test::test(); }
+int main(int argc, char *argv[]) {
+    opencle_test::test();
+    std::cout << "========== global_ptr_impl test pass ==========" << std::endl;
+}
 
 namespace opencle_test {
 
@@ -38,12 +41,12 @@ void test() {
         expect[i] = 5 * i;
     }
 
-    std::function<void(void const *)> deleter = [](void const *ptr){delete[] static_cast<int const *>(ptr);};
+    std::function<void(void const *)> deleter = [](void const * ptr) {delete[] static_cast<int const *>(ptr);};
 
     const opencle::global_ptr_impl input_1_gp{input_1, element_num * sizeof(int), deleter};
     const opencle::global_ptr_impl input_2_gp{input_2, element_num * sizeof(int), deleter};
     opencle::global_ptr_impl output_gp{element_num * sizeof(int)};
-    const opencle::global_ptr_impl expect_gp{expect, element_num * sizeof(int), deleter}; 
+    const opencle::global_ptr_impl expect_gp{expect, element_num * sizeof(int), deleter};
 
     cl_int status;
 
@@ -129,8 +132,6 @@ void test() {
     // free resources
     clReleaseKernel(kernel);
     clReleaseProgram(program);
-
-    std::cout << "========== global_ptr_impl test pass ==========" << std::endl;
 }
 
 } // namespace opencle_test

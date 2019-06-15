@@ -14,7 +14,7 @@ global_ptr_impl::global_ptr_impl()
 
 global_ptr_impl::global_ptr_impl(size_t size)
     : valid_{true}, size_{size}, host_ptr_{nullptr}, deleter_{nullptr}, device_ptr_{nullptr}, on_device_{nullptr} {
-    if(size == 0) {
+    if (size == 0) {
         throw std::runtime_error{"size cannot be 0!"};
     }
     logger("Size constructor, " << this << "!");
@@ -23,12 +23,12 @@ global_ptr_impl::global_ptr_impl(size_t size)
 
 global_ptr_impl::global_ptr_impl(void *ptr, size_t size, std::function<void(void const *)> deleter)
     : valid_{true}, size_{size}, host_ptr_{ptr}, deleter_{deleter}, device_ptr_{nullptr}, on_device_{nullptr} {
-    if(size == 0) {
+    if (size == 0) {
         throw std::runtime_error{"size cannot be 0!"};
     } else if (ptr == nullptr) {
         throw std::runtime_error{"ptr cannot be nullptr"};
     }
-    
+
     logger("Host-side pointer constructor, " << this << "!");
     return;
 }
@@ -85,7 +85,7 @@ void *global_ptr_impl::get() {
         } else if (host_ptr_) {
         } else if (device_ptr_) {
             host_ptr_ = new char[size_];
-            deleter_ = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
+            deleter_ = [](void const * ptr) { delete[] static_cast<char const *>(ptr); };
             cl_int status;
             status = clEnqueueReadBuffer(on_device_->cmd_queue_, device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
             if (status != CL_SUCCESS) {
@@ -131,7 +131,7 @@ global_ptr_impl global_ptr_impl::clone() {
             char *new_ptr = new char[size_];
             memcpy(new_ptr, host_ptr_, size_);
 
-            std::function<void(void const *)> new_deleter = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
+            std::function<void(void const *)> new_deleter = [](void const * ptr) { delete[] static_cast<char const *>(ptr); };
 
             return global_ptr_impl(new_ptr, size_, new_deleter);
         } else {
@@ -150,7 +150,7 @@ global_ptr_impl global_ptr_impl::clone() const {
             char *new_ptr = new char[size_];
             memcpy(new_ptr, host_ptr_, size_);
 
-            std::function<void(void const *)> new_deleter = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
+            std::function<void(void const *)> new_deleter = [](void const * ptr) { delete[] static_cast<char const *>(ptr); };
 
             return global_ptr_impl(new_ptr, size_, new_deleter);
         } else {

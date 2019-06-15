@@ -14,7 +14,7 @@ using device = std::unique_ptr<device_impl>;
 
 /** const indicate read_only, otherwise is read_write **/
 class global_ptr_impl final {
-  private:
+private:
     bool valid_;
     size_t size_;
 
@@ -26,7 +26,7 @@ class global_ptr_impl final {
     mutable cl_mem device_ptr_;
     mutable device_impl const *on_device_;
 
-  public:
+public:
     global_ptr_impl();
     global_ptr_impl(size_t size);
 

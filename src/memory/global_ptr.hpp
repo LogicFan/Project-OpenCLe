@@ -16,13 +16,13 @@ namespace opencle {
 template <typename T, typename X = void> class global_ptr;
 
 template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> final {
-  private:
+private:
     mutable std::unique_ptr<global_ptr_impl> impl_;
 
     global_ptr *nxt;
     global_ptr *pre;
 
-  public:
+public:
     global_ptr() {
         impl_ = std::make_unique<global_ptr_impl>();
         nxt = nullptr;
@@ -40,7 +40,7 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
     }
 
     global_ptr(std::unique_ptr<T[]> ptr, size_t size) {
-        std::function<void(void const *)> deleter = [del = ptr.get_deleter()](void const *p) {
+        std::function<void(void const *)> deleter = [del = ptr.get_deleter()](void const * p) {
             del(reinterpret_cast<T *>(const_cast<void *>(p)));
         };
 
@@ -53,7 +53,7 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
 
     global_ptr(T *ptr, size_t size) {
         T *new_ptr = new T[size];
-        std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
+        std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
         memcpy(new_ptr, ptr, size * sizeof(T));
 
         impl_ = std::make_unique<global_ptr_impl>(new_ptr, size * sizeof(T), deleter);
@@ -66,7 +66,7 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
     global_ptr(std::initializer_list<T> const &il) {
         size_t size = il.size();
         T *new_ptr = new T[size];
-        std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
+        std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
 
         int i = 0;
         for (auto const &e : il) {
@@ -84,7 +84,7 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
     template <class U> global_ptr(U const &container, std::enable_if_t<std::is_class_v<U>, dummy> = dummy{}) {
         size_t size = container.size();
         T *new_ptr = new T[size];
-        std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
+        std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
 
         int i = 0;
         for (auto const &e : container) {
@@ -131,7 +131,7 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         } else {
             size_t size = impl_->size();
             T *new_ptr = new T[size];
-            std::function<void(void const *)> deleter = [](void const *p) { delete[] static_cast<T const *>(p); };
+            std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
 
             impl_->~global_ptr_impl();
             new (impl_.get()) global_ptr_impl{new_ptr, size, deleter};
@@ -142,16 +142,12 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
     }
 
     T *release() {
-        if (impl_) {
-            T *ptr = static_cast<T *>(impl_->release());
-            impl_.reset();
-            return ptr;
-        } else {
-            return nullptr;
-        }
+        T *ptr = static_cast<T *>(impl_->release());
+        ~global_ptr();
+        new (this) global_ptr{};
     }
 
-    void reset() { 
+    void reset() {
         ~global_ptr();
         new (this) global_ptr{};
     }
@@ -171,7 +167,11 @@ template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> 
         new (this) global_ptr{ptr, size};
     }
 
-    void swap(global_ptr &rhs) { std::swap(impl_, rhs.impl_); }
+    void swap(global_ptr &rhs) {
+        std::swap(impl_, rhs.impl_);
+        std::swap(nxt, rhs.nxt);
+        std::swap(pre, rhs.pre);
+    }
 
     global_ptr clone() {
         global_ptr new_global_ptr;

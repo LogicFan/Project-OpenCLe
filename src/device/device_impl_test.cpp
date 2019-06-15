@@ -19,7 +19,10 @@ const char *programSource =
     "   C[idx] = A[idx] + B[idx]; \n"
     "} \n";
 
-int main(int argc, char *argv[]) { opencle_test::test(); }
+int main(int argc, char *argv[]) {
+    opencle_test::test();
+    std::cout << "========== device_impl test pass ==========" << std::endl;
+}
 
 namespace opencle_test {
 
@@ -61,19 +64,19 @@ void test() {
 
     // initialize and allocate device side memory
     cl_mem input_1_buf = clCreateBuffer(
-        context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
+                             context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
             "OpenCL runtime error: Cannot create memory buffer"};
     }
     cl_mem input_2_buf = clCreateBuffer(
-        context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
+                             context, CL_MEM_READ_ONLY, element_num * sizeof(int), NULL, &status);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
             "OpenCL runtime error: Cannot create memory buffer"};
     }
     cl_mem output_buf = clCreateBuffer(
-        context, CL_MEM_WRITE_ONLY, element_num * sizeof(int), NULL, &status);
+                            context, CL_MEM_WRITE_ONLY, element_num * sizeof(int), NULL, &status);
     if (status != CL_SUCCESS) {
         throw std::runtime_error{
             "OpenCL runtime error: Cannot create memory buffer"};
@@ -157,8 +160,6 @@ void test() {
     delete[] input_2;
     delete[] output;
     delete[] expect;
-
-    std::cout << "========== device_impl test pass ==========" << std::endl;
 }
 
 } // namespace opencle_test
