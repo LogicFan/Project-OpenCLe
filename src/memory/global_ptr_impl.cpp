@@ -103,6 +103,7 @@ void *global_ptr_impl::get() {
 }
 
 void const *global_ptr_impl::get() const {
+    logger("global_ptr_impl::get() const")
     if (valid_ && host_ptr_) {
         logger("Get host-side memory " << host_ptr_ << "!");
         return host_ptr_;
@@ -144,7 +145,7 @@ global_ptr_impl global_ptr_impl::clone() {
 }
 
 global_ptr_impl global_ptr_impl::clone() const {
-    logger("Clone from " << this << "!");
+    logger("Clone (const) from " << this << "!");
     if (valid_) {
         if (host_ptr_) {
             char *new_ptr = new char[size_];
@@ -239,7 +240,7 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
 }
 
 cl_mem global_ptr_impl::to_device(device const &dev) const {
-    logger("Move memory to device " << dev.get() << "!");
+    logger("Move memory to device (const)" << dev.get() << "!");
     cl_int status;
     if (valid_) {
         if (host_ptr_) {
