@@ -12,6 +12,10 @@ namespace {
 class dummy {};
 } // namespace
 
+namespace opencle_test {
+    test();
+}
+
 namespace opencle {
 template <typename T, typename X = void> class global_ptr;
 
@@ -182,6 +186,8 @@ public:
     T *get() {
         return static_cast<T *>(impl_->get());
     }
+
+    friend class device_impl;
 };
 
 } // namespace opencle

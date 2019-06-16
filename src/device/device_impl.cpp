@@ -1,19 +1,22 @@
 #include <iostream>
 #include <stdexcept>
 #include <utility>
+#include <type_traits>
 
 #define NDEBUG
 
 #include "device_impl.hpp"
+#include "../memory/global_ptr.hpp"
 
 namespace {
 void pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data) {
-    logger("OpenCL runtime error callback function!");
+    logger("pfn_notify");
 
     throw std::runtime_error{"OpenCL runtime error: Context failure. " + std::string{errinfo}};
 }
 
 cl_context get_context(cl_device_id const &dev) {
+    logger("get_context");
     cl_int status;
     cl_context temp = clCreateContext(NULL, 1, &dev, pfn_notify, NULL, &status);
     if (status != CL_SUCCESS) {
@@ -25,6 +28,7 @@ cl_context get_context(cl_device_id const &dev) {
 }
 
 cl_command_queue get_command_queue(cl_device_id const &dev, cl_context const &con) {
+    logger("get_command_queue");
     cl_int status;
     cl_command_queue temp = clCreateCommandQueueWithProperties(con, dev, NULL, &status);
     if (status != CL_SUCCESS) {
@@ -36,6 +40,7 @@ cl_command_queue get_command_queue(cl_device_id const &dev, cl_context const &co
 }
 
 size_t get_computate_unit(cl_device_id const &dev) {
+    logger("get_computate_unit");
     cl_int status;
     cl_uint cu_num;
     status = clGetDeviceInfo(dev, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &cu_num, NULL);
@@ -94,6 +99,7 @@ bool device_impl::operator<(device_impl const &rhs) const {
 device_impl::operator bool() { return valid_; }
 
 std::vector<device> device_impl::get_device_list() {
+    logger("get_device_list");
     std::vector<device> device_list;
 
     cl_int status;
@@ -142,6 +148,16 @@ std::vector<device> device_impl::get_device_list() {
     }
 
     return std::move(device_list);
+}
+
+template <typename T>
+void device_impl::synchronize(global_ptr<T[]> const &memory) {
+    logger("synchronize");
+    const_cast<std::conditonal<std::is_const_v<T>,
+                               std::unique_ptr<const global_ptr_impl>,
+                               std::unique_ptr<global_ptr_impl>
+                               >
+               >(memory.impl_)->to_device(*this);
 }
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev) {
