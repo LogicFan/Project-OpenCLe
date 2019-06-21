@@ -153,10 +153,9 @@ std::vector<device> device_impl::get_device_list() {
 template <typename T>
 void device_impl::synchronize(global_ptr<T[]> const &memory) {
     logger("synchronize");
-    const_cast<std::conditonal<std::is_const_v<T>,
+    const_cast<std::conditional<std::is_const_v<T>,
                                std::unique_ptr<const global_ptr_impl>,
-                               std::unique_ptr<global_ptr_impl>
-                               >
+                                std::unique_ptr<global_ptr_impl>>
                >(memory.impl_)->to_device(*this);
 }
 
