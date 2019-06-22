@@ -15,7 +15,8 @@ void test();
 namespace opencle {
 class device_impl;
 using device = std::unique_ptr<device_impl>;
-class global_ptr;
+
+template <typename T, typename X = void> class global_ptr;
 
 class device_impl final {
     // private:
@@ -44,8 +45,8 @@ public:
 
     static std::vector<device> get_device_list();
 
-    template <typename T>
-    void synchronize(global_ptr<T[]> const &memory);
+    // template <typename T>
+    // cl_mem synchronize(global_ptr<T[]> const &memory);
 
     // void exec(task &&task);
 

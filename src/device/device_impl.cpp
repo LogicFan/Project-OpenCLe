@@ -56,14 +56,14 @@ size_t get_computate_unit(cl_device_id const &dev) {
 namespace opencle {
 device_impl::device_impl(cl_device_id const &dev, cl_context const &con, cl_command_queue const &cmd)
     : device_{dev}, context_{con}, cmd_queue_{cmd}, cu_total{get_computate_unit(dev)}, valid_{true}, cu_used{0} {
-    logger("device_id, context & command_queue constructor, create " << this);
+    logger("device_impl(device_id, context, command_queue), create " << this);
     return;
 }
 
 device_impl::device_impl(cl_device_id const &dev)
     : device_{dev}, context_{get_context(device_)},
       cmd_queue_{get_command_queue(device_, context_)}, cu_total{get_computate_unit(dev)}, valid_{true}, cu_used{0} {
-    logger("device_id constructor, create " << this);
+    logger("device_impl(device_id), create " << this);
     return;
 }
 
@@ -78,11 +78,11 @@ device_impl::device_impl(cl_device_id const &dev)
 // }
 
 device_impl::~device_impl() {
+    logger("~device_impl, destory " << this);
     clReleaseCommandQueue(cmd_queue_);
-    logger("Release command queue " << cmd_queue_ << "!");
+    logger("Release command queue " << cmd_queue_);
     clReleaseContext(context_);
-    logger("Release context " << context_ << "!");
-    logger("Destructor, destory " << this << "!");
+    logger("Release context " << context_);
 }
 
 // device_impl &device_impl::operator=(device_impl &&rhs) {
@@ -92,11 +92,14 @@ device_impl::~device_impl() {
 // }
 
 bool device_impl::operator<(device_impl const &rhs) const {
-    logger("Compare " << this << " and " << &rhs << "!");
+    logger("operator<, " << this << " and " << &rhs);
     return !valid_ && cu_total - cu_used < rhs.cu_total - rhs.cu_used;
 }
 
-device_impl::operator bool() { return valid_; }
+device_impl::operator bool() { 
+    logger("operator bool")
+    return valid_; 
+    }
 
 std::vector<device> device_impl::get_device_list() {
     logger("get_device_list");
@@ -150,15 +153,16 @@ std::vector<device> device_impl::get_device_list() {
     return std::move(device_list);
 }
 
-template <typename T>
-void device_impl::synchronize(global_ptr<T[]> const &memory) {
-    logger("synchronize");
-    const_cast<std::conditonal<std::is_const_v<T>,
-                               std::unique_ptr<const global_ptr_impl>,
-                               std::unique_ptr<global_ptr_impl>
-                               >
-               >(memory.impl_)->to_device(*this);
-}
+// template <typename T>
+// cl_mem device_impl::synchronize(global_ptr<T[]> const &memory) {
+//     logger("synchronize");
+//     return 
+//     const_cast<std::conditional_t<std::is_const_v<T>,
+//                                   std::unique_ptr<const global_ptr_impl>,
+//                                   std::unique_ptr<global_ptr_impl>
+//                                   >
+//                >(memory.impl_)->to_device(*this);
+// }
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev) {
     cl_int status;
