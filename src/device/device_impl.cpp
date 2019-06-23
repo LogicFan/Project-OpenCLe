@@ -153,16 +153,11 @@ std::vector<device> device_impl::get_device_list() {
     return std::move(device_list);
 }
 
-// template <typename T>
-// cl_mem device_impl::synchronize(global_ptr<T[]> const &memory) {
-//     logger("synchronize");
-//     return 
-//     const_cast<std::conditional_t<std::is_const_v<T>,
-//                                   std::unique_ptr<const global_ptr_impl>,
-//                                   std::unique_ptr<global_ptr_impl>
-//                                   >
-//                >(memory.impl_)->to_device(*this);
-// }
+template <typename T>
+cl_mem device_impl::synchronize(global_ptr<T[]> const &memory) {
+    logger("synchronize");
+    return memory.impl_->to_device(*this);
+}
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev) {
     cl_int status;

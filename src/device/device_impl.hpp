@@ -45,8 +45,8 @@ public:
 
     static std::vector<device> get_device_list();
 
-    // template <typename T>
-    // cl_mem synchronize(global_ptr<T[]> const &memory);
+    template <typename T>
+    cl_mem synchronize(global_ptr<T[]> const &memory);
 
     // void exec(task &&task);
 
