@@ -8,43 +8,45 @@
 namespace opencle {
 global_ptr_impl::global_ptr_impl()
     : valid_{false}, size_{0}, host_ptr_{nullptr}, deleter_{nullptr}, device_ptr_{nullptr}, on_device_{nullptr} {
-    logger("Default constructor, create " << this << "!");
+    logger("global_ptr_impl, create " << this);
     return;
 }
 
 global_ptr_impl::global_ptr_impl(size_t size)
     : valid_{true}, size_{size}, host_ptr_{nullptr}, deleter_{nullptr}, device_ptr_{nullptr}, on_device_{nullptr} {
+    logger("global_ptr_impl(size_t), create " << this);
     if (size == 0) {
         throw std::runtime_error{"size cannot be 0!"};
     }
-    logger("Size constructor, " << this << "!");
     return;
 }
 
 global_ptr_impl::global_ptr_impl(void *ptr, size_t size, std::function<void(void const *)> deleter)
     : valid_{true}, size_{size}, host_ptr_{ptr}, deleter_{deleter}, device_ptr_{nullptr}, on_device_{nullptr} {
+    logger("global_ptr_impl(void *, size_t, std::function), create" << this);
+    
     if (size == 0) {
         throw std::runtime_error{"size cannot be 0!"};
     } else if (ptr == nullptr) {
         throw std::runtime_error{"ptr cannot be nullptr"};
     }
 
-    logger("Host-side pointer constructor, " << this << "!");
     return;
 }
 
 global_ptr_impl::global_ptr_impl(global_ptr_impl &&rhs)
     : valid_{rhs.valid_}, size_{rhs.size_}, host_ptr_{rhs.host_ptr_}, deleter_{rhs.deleter_}, device_ptr_{rhs.device_ptr_},
       on_device_{rhs.on_device_} {
+    logger("global_ptr_impl(move), " << &rhs << " -> " << this);
     rhs.host_ptr_ = nullptr;
     rhs.deleter_ = nullptr;
     rhs.device_ptr_ = nullptr;
     rhs.on_device_ = nullptr;
-    logger("Move constructor, from " << &rhs << " to " << this << "!");
     return;
 }
 
 global_ptr_impl::~global_ptr_impl() {
+    logger("~global_ptr_impl, destory " << this);
     if (host_ptr_) {
         deleter_(host_ptr_);
         logger("Release host-side memory " << host_ptr_ << "!");
@@ -61,19 +63,18 @@ global_ptr_impl::~global_ptr_impl() {
 
     size_ = 0;
     valid_ = false;
-
-    logger("Destructor, " << this << "!");
     return;
 }
 
 global_ptr_impl &global_ptr_impl::operator=(global_ptr_impl &&rhs) {
+    logger("operator=(move), " << &rhs << " -> " << this);
     ~global_ptr_impl();
     new (this) global_ptr_impl(std::move(rhs));
-    logger("Move assignment operator, from " << &rhs << " to " << this << "!");
     return *this;
 }
 
 void *global_ptr_impl::get() {
+    logger("get");
     if (valid_) {
         if (host_ptr_ && device_ptr_) {
             cl_int status;
@@ -103,7 +104,7 @@ void *global_ptr_impl::get() {
 }
 
 void const *global_ptr_impl::get() const {
-    logger("global_ptr_impl::get() const")
+    logger("get const");
     if (valid_ && host_ptr_) {
         logger("Get host-side memory " << host_ptr_ << "!");
         return host_ptr_;
@@ -115,6 +116,7 @@ void const *global_ptr_impl::get() const {
 }
 
 void *global_ptr_impl::release() {
+    logger("release");
     void *ptr = get();
     host_ptr_ = nullptr;
     deleter_ = nullptr;
@@ -125,7 +127,7 @@ void *global_ptr_impl::release() {
 }
 
 global_ptr_impl global_ptr_impl::clone() {
-    logger("Clone from " << this << "!");
+    logger("clone");
     if (valid_) {
         if (host_ptr_) {
             get();
@@ -145,7 +147,7 @@ global_ptr_impl global_ptr_impl::clone() {
 }
 
 global_ptr_impl global_ptr_impl::clone() const {
-    logger("Clone (const) from " << this << "!");
+    logger("clone const");
     if (valid_) {
         if (host_ptr_) {
             char *new_ptr = new char[size_];
@@ -163,9 +165,15 @@ global_ptr_impl global_ptr_impl::clone() const {
     return {};
 }
 
-global_ptr_impl::operator bool() const { return valid_ && host_ptr_; }
+global_ptr_impl::operator bool() const { 
+    logger("operator bool");
+    return valid_ && host_ptr_; 
+}
 
-size_t global_ptr_impl::size() const { return size_; }
+size_t global_ptr_impl::size() const { 
+    logger("size");
+    return size_; 
+}
 
 cl_mem global_ptr_impl::to_device(device const &dev) {
     logger("Move memory to device " << dev.get() << "!");
