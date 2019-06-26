@@ -7,6 +7,7 @@
 
 #include "../util/core_def.hpp"
 #include "../util/logger/logger.hpp"
+#include "../memory/global_ptr.hpp"
 
 namespace opencle_test {
 void test();
@@ -15,8 +16,6 @@ void test();
 namespace opencle {
 class device_impl;
 using device = std::unique_ptr<device_impl>;
-
-template <typename T, typename X = void> class global_ptr;
 
 class device_impl final {
     // private:
@@ -46,7 +45,10 @@ public:
     static std::vector<device> get_device_list();
 
     template <typename T>
-    cl_mem synchronize(global_ptr<T[]> const &memory);
+    cl_mem synchronize(global_ptr<T[], void> const &memory) {
+        logger("synchronize");
+        return memory.impl_->to_device(this);
+    }
 
     // void exec(task &&task);
 

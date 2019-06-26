@@ -99,7 +99,7 @@ bool device_impl::operator<(device_impl const &rhs) const {
 device_impl::operator bool() { 
     logger("operator bool")
     return valid_; 
-    }
+}
 
 std::vector<device> device_impl::get_device_list() {
     logger("get_device_list");
@@ -151,12 +151,6 @@ std::vector<device> device_impl::get_device_list() {
     }
 
     return std::move(device_list);
-}
-
-template <typename T>
-cl_mem device_impl::synchronize(global_ptr<T[]> const &memory) {
-    logger("synchronize");
-    return memory.impl_->to_device(*this);
 }
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev) {
