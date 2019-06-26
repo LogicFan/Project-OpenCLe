@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../util/core_def.hpp"
 #include <CL/cl.h>
 #include <functional>
 #include <memory>
@@ -54,7 +55,9 @@ public:
     /** For device **/
 
     cl_mem to_device(device const &dev);
+    cl_mem to_device(device_impl const *dev);
     cl_mem to_device(device const &dev) const;
+    cl_mem to_device(device_impl const *dev) const;
 
     friend void ::opencle_test::test();
 };

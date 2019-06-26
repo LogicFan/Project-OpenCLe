@@ -176,11 +176,16 @@ size_t global_ptr_impl::size() const {
 }
 
 cl_mem global_ptr_impl::to_device(device const &dev) {
-    logger("Move memory to device " << dev.get() << "!");
+    logger("to_device (device) const " << dev << "!");
+    global_ptr_impl::to_device(dev.get());
+}
+
+cl_mem global_ptr_impl::to_device(device_impl const *dev) {
+    logger("to_device (device_impl*) " << dev << "!");
     cl_int status;
     if (valid_) {
         if (host_ptr_) {
-            if (on_device_ == dev.get()) {
+            if (on_device_ == dev) {
                 status = clEnqueueWriteBuffer(dev->cmd_queue_, device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
                 if (status != CL_SUCCESS) {
                     throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
@@ -191,7 +196,7 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
                 clReleaseMemObject(device_ptr_);
                 logger("Release memory " << device_ptr_ << " on device " << *on_device_ << "!");
 
-                on_device_ = dev.get();
+                on_device_ = dev;
                 device_ptr_ = clCreateBuffer(on_device_->context_, CL_MEM_READ_WRITE, size_, NULL, &status);
                 if (status != CL_SUCCESS) {
                     throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
@@ -205,7 +210,7 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
                 }
                 logger("Synchronize memory " << host_ptr_ << " to device " << *on_device_ << "!");
             } else {
-                on_device_ = dev.get();
+                on_device_ = dev;
                 device_ptr_ = clCreateBuffer(on_device_->context_, CL_MEM_READ_WRITE, size_, NULL, &status);
                 if (status != CL_SUCCESS) {
                     throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
@@ -220,19 +225,19 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
                 logger("Synchronize memory " << host_ptr_ << " to device " << *on_device_ << "!");
             }
         } else {
-            if (on_device_ == dev.get()) {
+            if (on_device_ == dev) {
             } else if (on_device_) {
                 clReleaseMemObject(device_ptr_);
                 logger("Release memory " << device_ptr_ << " on device " << *on_device_ << "!");
 
-                on_device_ = dev.get();
+                on_device_ = dev;
                 device_ptr_ = clCreateBuffer(on_device_->context_, CL_MEM_READ_WRITE, size_, NULL, &status);
                 if (status != CL_SUCCESS) {
                     throw std::runtime_error{"OpenCL runtime error: Cannot create memory buffer!"};
                 }
                 logger("Create memory " << device_ptr_ << " on device " << *on_device_ << "!");
             } else {
-                on_device_ = dev.get();
+                on_device_ = dev;
                 device_ptr_ = clCreateBuffer(on_device_->context_, CL_MEM_READ_WRITE, size_, NULL, &status);
                 if (status != CL_SUCCESS) {
                     throw std::runtime_error{"OpenCL runtime error: Cannot create memory buffer!"};
@@ -248,23 +253,28 @@ cl_mem global_ptr_impl::to_device(device const &dev) {
 }
 
 cl_mem global_ptr_impl::to_device(device const &dev) const {
-    logger("Move memory to device (const)" << dev.get() << "!");
+    logger("to_device (device) const " << dev << "!");
+    global_ptr_impl::to_device(dev.get());
+}
+
+cl_mem global_ptr_impl::to_device(device_impl const *dev) const {
+    logger("to_device (device_impl*) const " << dev << "!");
     cl_int status;
     if (valid_) {
         if (host_ptr_) {
-            if (on_device_ == dev.get()) {
+            if (on_device_ == dev) {
             } else if (on_device_) {
                 clReleaseMemObject(device_ptr_);
                 logger("Release memory " << device_ptr_ << " on device " << *on_device_ << "!");
 
-                on_device_ = dev.get();
+                on_device_ = dev;
                 device_ptr_ = clCreateBuffer(on_device_->context_, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, size_, host_ptr_, &status);
                 if (status != CL_SUCCESS) {
                     throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
                 }
                 logger("Create memory " << device_ptr_ << " on device " << *on_device_ << "!");
             } else {
-                on_device_ = dev.get();
+                on_device_ = dev;
                 device_ptr_ = clCreateBuffer(on_device_->context_, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, size_, host_ptr_, &status);
                 if (status != CL_SUCCESS) {
                     throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
