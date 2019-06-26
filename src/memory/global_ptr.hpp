@@ -1,3 +1,6 @@
+#pragma once
+
+#include "../util/core_def.hpp"
 #include "../util/logger/logger.hpp"
 #include "global_ptr_impl.hpp"
 #include <initializer_list>
@@ -24,6 +27,8 @@ template <typename T> struct resolve_global_ptr {
 
 template <typename T>
 using global_ptr_t = typename resolve_global_ptr<T>::type;
+
+template <typename T, typename X = void> class global_ptr;
 
 template <typename T> class global_ptr<T[], std::enable_if_t<std::is_pod_v<T>>> final {
 private:
