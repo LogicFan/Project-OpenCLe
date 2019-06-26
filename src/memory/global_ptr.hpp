@@ -36,22 +36,23 @@ private:
 
 public:
     global_ptr() {
+        logger("global_ptr, create " << this);
         impl_ = std::make_unique<global_ptr_t<T>>();
         nxt = nullptr;
         pre = nullptr;
-        logger("Default constructor, create " << this);
         return;
     }
 
     global_ptr(size_t size) {
+        logger("global_ptr(size_t), create " << this);
         impl_ = std::make_unique<global_ptr_t<T>>(size * sizeof(T));
         nxt = nullptr;
-        pre = nullptr;  
-        logger("Size constructor, create " << this);
+        pre = nullptr;
         return;
     }
 
     global_ptr(std::unique_ptr<T[]> ptr, size_t size) {
+        logger("global_ptr(unique_ptr, size_t), create " << this);
         std::function<void(void const *)> deleter = [del = ptr.get_deleter()](void const * p) {
             del(reinterpret_cast<T *>(const_cast<void *>(p)));
         };
@@ -59,11 +60,11 @@ public:
         impl_ = std::make_unique<global_ptr_t<T>>(ptr.release(), size * sizeof(T), deleter);
         nxt = nullptr;
         pre = nullptr;
-        logger("Unique ptr constructor, create " << this);
         return;
     }
 
     global_ptr(T *ptr, size_t size) {
+        logger("global_ptr(T*, size_t), create " << this);
         U *new_ptr = new U[size];
         std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
         memcpy(new_ptr, ptr, size * sizeof(T));
@@ -71,11 +72,11 @@ public:
         impl_ = std::make_unique<global_ptr_t<T>>(new_ptr, size * sizeof(T), deleter);
         nxt = nullptr;
         pre = nullptr;
-        logger("Non-ownership ptr constructor, create " << this);
         return;
     }
 
     global_ptr(std::initializer_list<T> const &il) {
+        logger("global_ptr(initializer_list), create " << this);
         size_t size = il.size();
         U *new_ptr = new U[size];
         std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
@@ -89,7 +90,6 @@ public:
         impl_ = std::make_unique<global_ptr_t<T>>(new_ptr, size * sizeof(T), deleter);
         nxt = nullptr;
         pre = nullptr;
-        logger("Initializer list constructor, create " << this);
         return;
     }
 
@@ -119,11 +119,13 @@ public:
     global_ptr &operator=(global_ptr &&rhs) = default;
 
     T &operator[](size_t index) {
+        logger("operator[" << index << "]");
         T *ptr = static_cast<T *>(impl_->get());
         return ptr[index];
     }
 
     T &at(size_t index) {
+        logger("at(" << index << ")");
         if (index < impl_->size()) {
             return operator[](index);
         } else {
@@ -132,11 +134,13 @@ public:
     }
 
     size_t size() {
+        logger("size");
         return impl_->size() / sizeof(T);
     }
 
     template <typename X = T, typename = std::enable_if_t<!std::is_const_v<X>>>
     T *allocate() {
+        logger("allocate");
         if (impl_->size() == 0) {
             throw std::runtime_error{"Unknown size of global_ptr!"};
         } else if (impl_->operator bool()) {
@@ -155,6 +159,7 @@ public:
     }
 
     T *release() {
+        logger("release");
         T *ptr = static_cast<T *>(impl_->release());
         ~global_ptr();
         new (this) global_ptr{};
@@ -162,11 +167,13 @@ public:
 
     template <typename ...Args>
     void reset(Args &&...args) {
+        logger("reset");
         ~global_ptr();
         new (this) global_ptr{std::forward<Args>(args)...};
     }
 
     global_ptr clone() {
+        logger("clone");
         global_ptr new_global_ptr;
         if(impl_) {
             new_global_ptr.impl_ = std::make_unique<global_ptr_t<T>>(impl_->clone());  
@@ -175,6 +182,7 @@ public:
     }
 
     T *get() {
+        logger("get");
         return static_cast<T *>(impl_->get());
     }
 
