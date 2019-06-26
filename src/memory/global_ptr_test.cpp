@@ -192,26 +192,26 @@ void basic_test() {
     std::cout << std::endl;
     std::cout << g7.size() << std::endl;
 
-    // try {
-    //     g7.allocate();
-    //     assert(true);
-    //     std::cout << "Error" << std::endl;
-    // } catch (...) {
+    try {
+        g7.allocate();
+        assert(true);
+        std::cout << "Error" << std::endl;
+    } catch (...) {
 
-    // }
+    }
 
-    // std::cout << "g8: ";
-    // global_ptr<int[]> g8(20);
-    // int *p8 = g8.allocate();
-    // for (int i = 0; i < 20; ++i) {
-    //     p8[i] = i;
-    // }
-    // for (int i = 0; i < 20; ++i) {
-    //     std::cout << g8[i] << ", ";
-    //     assert(g8[i] == i);
-    // }
-    // std::cout << std::endl;
-    // std::cout << g8.size() << std::endl;
+    std::cout << "g8: ";
+    global_ptr<int[]> g8(20);
+    int *p8 = g8.allocate();
+    for (int i = 0; i < 20; ++i) {
+        p8[i] = i;
+    }
+    for (int i = 0; i < 20; ++i) {
+        std::cout << g8[i] << ", ";
+        assert(g8[i] == i);
+    }
+    std::cout << std::endl;
+    std::cout << g8.size() << std::endl;
 
     // // test for clone
 

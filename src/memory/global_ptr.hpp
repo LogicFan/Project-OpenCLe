@@ -135,23 +135,24 @@ public:
         return impl_->size() / sizeof(T);
     }
 
-    // T *allocate() {
-    //     if (impl_->size() == 0) {
-    //         throw std::runtime_error{"Unknown size of global_ptr!"};
-    //     } else if (impl_->operator bool()) {
-    //         throw std::runtime_error{"Cannot reallocate memory!"};
-    //     } else {
-    //         size_t size = impl_->size();
-    //         T *new_ptr = new T[size];
-    //         std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
+    template <typename X = T, typename = std::enable_if_t<!std::is_const_v<X>>>
+    T *allocate() {
+        if (impl_->size() == 0) {
+            throw std::runtime_error{"Unknown size of global_ptr!"};
+        } else if (impl_->operator bool()) {
+            throw std::runtime_error{"Cannot reallocate memory!"};
+        } else {
+            size_t size = impl_->size();
+            T *new_ptr = new T[size];
+            std::function<void(void const *)> deleter = [](void const * p) { delete[] static_cast<T const *>(p); };
 
-    //         impl_->~global_ptr_impl();
-    //         new (impl_.get()) global_ptr_impl{new_ptr, size, deleter};
+            impl_->~global_ptr_impl();
+            new (impl_.get()) global_ptr_impl{new_ptr, size, deleter};
 
-    //         return new_ptr;
-    //     }
-    //     return nullptr;
-    // }
+            return new_ptr;
+        }
+        return nullptr;
+    }
 
     // T *release() {
     //     T *ptr = static_cast<T *>(impl_->release());
