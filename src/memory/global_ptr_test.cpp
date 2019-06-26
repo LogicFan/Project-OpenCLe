@@ -33,99 +33,6 @@ namespace opencle_test {
 
 using namespace opencle;
 
-// void test() {
-//     constexpr int element_num = 16;
-
-//     // allocate space and initialize for input and output host data
-//     std::vector<int> input_1_vec;
-//     std::vector<int> input_2_vec;
-//     std::vector<int> expect_vec;
-//     for(int i = 0; i < element_num; ++i) {
-//         input_1_vec.push_back(i);
-//         input_2_vec.push_back(4 * i);
-//         expect_vec.push_back(5 * i);
-//     }
-
-//     global_ptr<const int[]> input_1{input_1_vec};
-//     global_ptr<const int[]> input_2{input_2_vec};
-//     global_ptr<const int[]> expect{expect_vec};
-//     global_ptr<int[]> output(element_num);
-
-//     cl_int status;
-
-//     /** Test for get_device_list() method and constructor */
-//     std::vector<device> device_list =
-//         opencle::device_impl::get_device_list();
-
-//     for (auto const &dev : device_list) {
-//         logger(dev << std::endl);
-//     }
-
-//     device &dev = device_list[0];
-
-//     cl_device_id device = dev->device_;
-//     cl_context context = dev->context_;
-//     cl_command_queue cmd_queue = dev->cmd_queue_;
-
-//     cl_mem input_1_buf = dev->synchronize(input_1);
-//     cl_mem input_2_buf = dev->synchronize(input_2);
-//     cl_mem output_buf = dev->synchronize(output);
-
-//     // initialize kernel
-//     cl_program program =
-//         clCreateProgramWithSource(context, 1, &programSource, NULL, &status);
-//     if (status != CL_SUCCESS) {
-//         throw std::runtime_error{
-//             "OpenCL runtime error: Cannot create OpenCL program"};
-//     }
-//     status = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
-//     if (status != CL_SUCCESS) {
-//         throw std::runtime_error{
-//             "OpenCL runtime error: Cannot compile OpenCL program"};
-//     }
-//     cl_kernel kernel = clCreateKernel(program, "vecadd", &status);
-//     if (status != CL_SUCCESS) {
-//         throw std::runtime_error{"OpenCL runtime error: Cannot create kernel"};
-//     }
-
-//     // set arguments
-//     status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_1_buf);
-//     if (status != CL_SUCCESS) {
-//         throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
-//     }
-//     status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_2_buf);
-//     if (status != CL_SUCCESS) {
-//         throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
-//     }
-//     status = clSetKernelArg(kernel, 2, sizeof(cl_mem), &output_buf);
-//     if (status != CL_SUCCESS) {
-//         throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
-//     }
-
-//     // enqueue kernel
-//     size_t index_space_size[1], work_group_size[1];
-//     index_space_size[0] = element_num;
-//     work_group_size[0] = 4;
-
-//     status =
-//         clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, index_space_size,
-//                                work_group_size, 0, NULL, NULL);
-//     if (status != CL_SUCCESS) {
-//         throw std::runtime_error{"OpenCL runtime error: Cannot enqueue kernel"};
-//     }
-
-//     logger("The output array is ");
-//     for (int i = 0; i < element_num; ++i) {
-//         logger(output[i]);
-//         assert(expect[i] == output[i]);
-//     }
-
-//     // free resources
-//     clReleaseKernel(kernel);
-//     clReleaseProgram(program);
-// }
-
-
 void test() {
     // test for ctor
     global_ptr<const int[]> g1;
@@ -237,5 +144,96 @@ void test() {
         std::cout << g10[i] << std::endl;
         assert(g10[i] == i * 7);
     }
+
+    // integration test
+    constexpr int element_num = 16;
+
+    // allocate space and initialize for input and output host data
+    std::vector<int> input_1_vec;
+    std::vector<int> input_2_vec;
+    std::vector<int> expect_vec;
+    for(int i = 0; i < element_num; ++i) {
+        input_1_vec.push_back(i);
+        input_2_vec.push_back(4 * i);
+        expect_vec.push_back(5 * i);
+    }
+
+    global_ptr<const int[]> input_1{0, 1, 2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15};
+    global_ptr<const int[]> input_2{0, 4, 8,  12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60};
+    global_ptr<const int[]> expect{ 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75};
+    global_ptr<int[]> output(element_num);
+
+    cl_int status;
+
+    /** Test for get_device_list() method and constructor */
+    std::vector<device> device_list =
+        opencle::device_impl::get_device_list();
+
+    for (auto const &dev : device_list) {
+        logger(dev << std::endl);
+    }
+
+    device &dev = device_list[0];
+
+    cl_device_id device = dev->device_;
+    cl_context context = dev->context_;
+    cl_command_queue cmd_queue = dev->cmd_queue_;
+
+    cl_mem input_1_buf = dev->synchronize(input_1);
+    cl_mem input_2_buf = dev->synchronize(input_2);
+    cl_mem output_buf = dev->synchronize(output);
+
+    // initialize kernel
+    cl_program program =
+        clCreateProgramWithSource(context, 1, &programSource, NULL, &status);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot create OpenCL program"};
+    }
+    status = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{
+            "OpenCL runtime error: Cannot compile OpenCL program"};
+    }
+    cl_kernel kernel = clCreateKernel(program, "vecadd", &status);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot create kernel"};
+    }
+
+    // set arguments
+    status = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_1_buf);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
+    }
+    status = clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_2_buf);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
+    }
+    status = clSetKernelArg(kernel, 2, sizeof(cl_mem), &output_buf);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot set argument"};
+    }
+
+    // enqueue kernel
+    size_t index_space_size[1], work_group_size[1];
+    index_space_size[0] = element_num;
+    work_group_size[0] = 4;
+
+    status =
+        clEnqueueNDRangeKernel(cmd_queue, kernel, 1, NULL, index_space_size,
+                               work_group_size, 0, NULL, NULL);
+    if (status != CL_SUCCESS) {
+        throw std::runtime_error{"OpenCL runtime error: Cannot enqueue kernel"};
+    }
+
+    logger("The output array is ");
+    for (int i = 0; i < element_num; ++i) {
+        logger(output[i]);
+        assert(expect[i] == output[i]);
+    }
+
+    // free resources
+    clReleaseKernel(kernel);
+    clReleaseProgram(program);
 }
 }
