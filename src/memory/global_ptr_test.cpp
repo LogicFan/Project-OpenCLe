@@ -223,7 +223,7 @@ void test() {
 
     g9[2] = 70;
     assert(g9[2] == 70);
-    assert(g4[2] = 6);
+    assert(g8[2] = 6);
 
     // test for allocate
 
