@@ -154,49 +154,33 @@ public:
         return nullptr;
     }
 
-    // T *release() {
-    //     T *ptr = static_cast<T *>(impl_->release());
-    //     ~global_ptr();
-    //     new (this) global_ptr{};
-    // }
+    T *release() {
+        T *ptr = static_cast<T *>(impl_->release());
+        ~global_ptr();
+        new (this) global_ptr{};
+    }
 
-    // void reset() {
-    //     ~global_ptr();
-    //     new (this) global_ptr{};
-    // }
+    template <typename ...Args>
+    void reset(Args &&...args) {
+        ~global_ptr();
+        new (this) global_ptr{std::forward<Args>(args)...};
+    }
 
-    // void reset(size_t size) {
-    //     ~global_ptr();
-    //     new (this) global_ptr{size};
-    // }
+    global_ptr clone() {
+        global_ptr new_global_ptr;
+        if(impl_) {
+            new_global_ptr.impl_ = std::make_unique<global_ptr_t<T>>(impl_->clone());  
+        } 
+        return new_global_ptr;
+    }
 
-    // void reset(std::unique_ptr<T[]> ptr, size_t size) {
-    //     ~global_ptr();
-    //     new (this) global_ptr{ptr, size};
-    // }
-
-    // void reset(T *ptr, size_t size) {
-    //     ~global_ptr();
-    //     new (this) global_ptr{ptr, size};
-    // }
-
-    // void swap(global_ptr &rhs) {
-    //     std::swap(impl_, rhs.impl_);
-    //     std::swap(nxt, rhs.nxt);
-    //     std::swap(pre, rhs.pre);
-    // }
-
-    // global_ptr clone() {
-    //     global_ptr new_global_ptr;
-    //     new_global_ptr.impl_ = std::make_unique<global_ptr_impl>(impl_->clone());
-    //     return new_global_ptr;
-    // }
-
-    // T *get() {
-    //     return static_cast<T *>(impl_->get());
-    // }
+    T *get() {
+        return static_cast<T *>(impl_->get());
+    }
 
     friend class device_impl;
+    
+    friend void ::opencle_test::test();
 };
 
 } // namespace opencle
