@@ -18,11 +18,11 @@ const char *programSource =
     "} \n";
 
 namespace opencle_test {
-    void basic_test();
+    // void basic_test();
 }
 
 int main(int argc, char *argv[]) {
-    opencle_test::basic_test();
+    // opencle_test::basic_test();
     opencle_test::test();
     std::cout << "========== global_ptr_impl test pass ==========" << std::endl;
 }
@@ -32,10 +32,6 @@ using namespace opencle;
 namespace opencle_test {
 
 using namespace opencle;
-
-void test() {
-
-}
 
 // void test() {
 //     constexpr int element_num = 16;
@@ -129,7 +125,8 @@ void test() {
 //     clReleaseProgram(program);
 // }
 
-void basic_test() {
+
+void test() {
     // test for ctor
     global_ptr<const int[]> g1;
     std::cout << g1.size() << std::endl;
@@ -155,7 +152,7 @@ void basic_test() {
     for (int i = 0; i < 20; ++i) {
         p4[i] = i * 3;
     }
-    global_ptr<const int[]> g4(p4, 20);
+    global_ptr<int[]> g4(p4, 20);
     delete p4;
     for (int i = 0; i < 20; ++i) {
         std::cout << g4[i] << ", ";
@@ -175,7 +172,7 @@ void basic_test() {
     // std::cout << g5.size() << std::endl;
 
     std::cout << "g6: ";
-    global_ptr<const int[]> g6{std::move(g4)};
+    global_ptr<int[]> g6{std::move(g4)};
     for (int i = 0; i < 20; ++i) {
         std::cout << g6[i] << ", ";
         assert(g6[i] == i * 3);
@@ -184,7 +181,7 @@ void basic_test() {
     std::cout << g6.size() << std::endl;
 
     std::cout << "g7: ";
-    global_ptr<const int[]> g7{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    global_ptr<int[]> g7{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     for (int i = 0; i < 10; ++i) {
         std::cout << g7[i] << ", ";
         assert(g7[i] == i);
@@ -213,32 +210,32 @@ void basic_test() {
     std::cout << std::endl;
     std::cout << g8.size() << std::endl;
 
-    // // test for clone
+    // test for clone
 
-    // std::cout << "g9: ";
-    // global_ptr<int[]> g9 = g4.clone();
-    // for (int i = 0; i < 20; ++i) {
-    //     std::cout << "(" << g9[i] << ", ";
-    //     std::cout << g4[i] << "), ";
-    //     assert(g9[i] == g4[i]);
-    // }
-    // std::cout << std::endl;
+    std::cout << "g9: ";
+    global_ptr<int[]> g9 = g8.clone();
+    for (int i = 0; i < 20; ++i) {
+        std::cout << "(" << g9[i] << ", ";
+        std::cout << g8[i] << "), ";
+        assert(g9[i] == g8[i]);
+    }
+    std::cout << std::endl;
 
-    // g9[2] = 70;
-    // assert(g9[2] == 70);
-    // assert(g4[2] = 6);
+    g9[2] = 70;
+    assert(g9[2] == 70);
+    assert(g4[2] = 6);
 
-    // // test for allocate
+    // test for allocate
 
-    // std::cout << "g10: ";
-    // global_ptr<int[]> g10(5);
-    // int *p10 = g10.allocate();
-    // for (int i = 0; i < 10; ++i) {
-    //     p10[i] = i * 7;
-    // }
-    // for (int i = 0; i < 10; ++i) {
-    //     std::cout << g10[i] << std::endl;
-    //     assert(g10[i] == i * 7);
-    // }
+    std::cout << "g10: ";
+    global_ptr<int[]> g10(5);
+    int *p10 = g10.allocate();
+    for (int i = 0; i < 10; ++i) {
+        p10[i] = i * 7;
+    }
+    for (int i = 0; i < 10; ++i) {
+        std::cout << g10[i] << std::endl;
+        assert(g10[i] == i * 7);
+    }
 }
 }
