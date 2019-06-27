@@ -17,7 +17,7 @@ class global_ptr_impl final
 private:
     using Deleter = std::function<void(void const *)>;
 
-    bool valid_;
+    mutable bool valid_;
     size_t size_;
     bool read_only_;
 

@@ -15,6 +15,7 @@ global_ptr_impl::global_ptr_impl(size_t size, bool read_only)
     logger("global_ptr_impl(size_t, bool), create " << this);
     if (size == 0)
     {
+        valid_ = false;
         throw std::runtime_error{"size cannot be 0!"};
     }
     return;
@@ -27,10 +28,12 @@ global_ptr_impl::global_ptr_impl(void *ptr, size_t size, Deleter deleter, bool r
     logger("global_ptr_impl(void *, size_t, Deleter, bool), create" << this);
     if (size == 0)
     {
+        valid_ = false;
         throw std::runtime_error{"size cannot be 0!"};
     }
     else if (ptr == nullptr)
     {
+        valid_ = false;
         throw std::runtime_error{"host pointer cannot be nullptr"};
     }
     return;
@@ -81,6 +84,7 @@ void *global_ptr_impl::get_read_write() const
         status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
         if (status != CL_SUCCESS)
         {
+            valid_ = false;
             throw std::runtime_error{"OpenCL runtime error: Cannot read memory "
                                      "buffer!"};
         }
@@ -98,6 +102,7 @@ void *global_ptr_impl::get_read_write()
         status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
         if (status != CL_SUCCESS)
         {
+            valid_ = false;
             throw std::runtime_error{"OpenCL runtime error: Cannot read memory "
                                      "buffer!"};
         }
@@ -108,10 +113,10 @@ void *global_ptr_impl::get_read_write()
         host_ptr_ = new char[size_];
         deleter_ = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
         logger("Allocate memory " << host_ptr_ << " on host");
-        cl_int status;
         status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
         if (status != CL_SUCCESS)
         {
+            valid_ = false;
             throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
         }
         logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to " << host_ptr_ << " on host");
@@ -161,85 +166,60 @@ void *global_ptr_impl::get()
     return nullptr;
 }
 
-void *global_ptr_impl::release() {
+void *global_ptr_impl::release()
+{
+    logger("release()");
+    if (!valid_)
+    {
+        throw std::runtime_error{"Getting address of an invalid global_ptr"};
+    }
     void *temp = get();
     this->~global_ptr_impl();
     valid_ = false;
     return temp;
 }
 
-#if 0
-
-global_ptr_impl global_ptr_impl::clone()
-{
-    logger("clone");
-    if (valid_)
-    {
-        if (host_ptr_)
-        {
-            get();
-            char *new_ptr = new char[size_];
-            memcpy(new_ptr, host_ptr_, size_);
-
-            std::function<void(void const *)> new_deleter = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
-
-            return global_ptr_impl(new_ptr, size_, new_deleter);
-        }
-        else
-        {
-            return global_ptr_impl(size_);
-        }
-    }
-    else
-    {
-        return global_ptr_impl();
-    }
-    return {};
-}
-
 global_ptr_impl global_ptr_impl::clone() const
 {
-    logger("clone const");
-    if (valid_)
+    logger("clone() const");
+    if (!valid_)
     {
-        if (host_ptr_)
-        {
-            char *new_ptr = new char[size_];
-            memcpy(new_ptr, host_ptr_, size_);
-
-            std::function<void(void const *)> new_deleter = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
-
-            return global_ptr_impl(new_ptr, size_, new_deleter);
-        }
-        else
-        {
-            global_ptr_impl(size_);
-        }
+        throw std::runtime_error{"Cannot copy an invalid global_ptr"};
     }
-    else
+
+    cl_int status;
+
+    void *new_ptr = new char[size_];
+    Deleter new_deleter = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
+    logger("Allocate memory " << new_ptr << " on host");
+    
+    status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, new_ptr, 0, NULL, NULL);
+    if (status != CL_SUCCESS)
     {
-        return global_ptr_impl();
+        valid_ = false;
+        throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
     }
-    return {};
+    logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to " << new_ptr << " on host");
+
+    return global_ptr_impl{new_ptr, size(), new_deleter};
 }
 
-global_ptr_impl::operator bool() const
-{
-    logger("operator bool");
-    return valid_ && host_ptr_;
+global_ptr_impl::operator bool() const {
+    logger("operator bool()");
+    return host_ptr_;
 }
 
 size_t global_ptr_impl::size() const
 {
-    logger("size");
+    logger("size()");
     return size_;
 }
 
-cl_mem global_ptr_impl::to_device(device const &dev)
-{
-    logger("to_device (device) const " << dev << "!");
-    global_ptr_impl::to_device(dev.get());
+cl_mem global_ptr_impl::to_device(device_impl const *dev) {
+
 }
+
+#if 0
 
 cl_mem global_ptr_impl::to_device(device_impl const *dev)
 {
