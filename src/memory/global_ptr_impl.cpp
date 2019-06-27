@@ -171,6 +171,8 @@ void *global_ptr_impl::release()
         throw std::runtime_error{"Getting address of an invalid global_ptr"};
     }
     void *temp = get();
+    host_ptr_ = nullptr;
+    deleter_ = nullptr;
     this->~global_ptr_impl();
     valid_ = false;
     return temp;
