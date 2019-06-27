@@ -183,7 +183,7 @@ global_ptr_impl global_ptr_impl::clone() const
     logger("clone() const");
     if (!valid_)
     {
-        throw std::runtime_error{"Cannot copy an invalid global_ptr"};
+        throw std::runtime_error{"Cannot clone an invalid global_ptr"};
     }
 
     cl_int status;
