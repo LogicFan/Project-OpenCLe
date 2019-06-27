@@ -136,7 +136,7 @@ std::ostream &operator<<(std::ostream &out, device_impl const &dev_impl)
         throw std::runtime_error{"OpenCL runtime error: Cannot get device info"};
     }
 
-    out << "Device: " << device_name << ", " << &dev_impl;
+    out << "Device: " << device_name << " (address: " << &dev_impl << ")";
     return out;
 }
 
