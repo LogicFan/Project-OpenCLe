@@ -5,9 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "../memory/global_ptr.hpp"
 #include "../util/core_def.hpp"
-#include "../util/logger/logger.hpp"
 
 namespace opencle
 {

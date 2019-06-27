@@ -1,10 +1,9 @@
-#include <iostream>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 
-#include "../memory/global_ptr.hpp"
 #include "device_impl.hpp"
+#include "../util/logger/logger.hpp"
 
 namespace
 {
