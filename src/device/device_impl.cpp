@@ -3,8 +3,6 @@
 #include <type_traits>
 #include <utility>
 
-#define NDEBUG
-
 #include "../memory/global_ptr.hpp"
 #include "device_impl.hpp"
 
@@ -13,7 +11,6 @@ namespace
 void __pfn_notify(const char *errinfo, const void *private_info, size_t cb, void *user_data)
 {
     logger("__pfn_notify(const char *, const void *, size_t, void *)");
-
     throw std::runtime_error{"OpenCL runtime error: Context failure. " + std::string{errinfo}};
 }
 

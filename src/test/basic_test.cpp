@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string>
 
-#include "util/logger/logger.hpp"
-#include "util/core_def.hpp"
+#include "../util/logger/logger.hpp"
+#include "../util/core_def.hpp"
 
 // OpenCL C code
 const char *programSource =
