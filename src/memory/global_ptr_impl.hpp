@@ -31,6 +31,9 @@ private:
     void *get_read_write();
     void *get_read_only() const;
 
+    cl_mem to_device_read_write(device_impl const *dev);
+    cl_mem to_device_read_only(device_impl const *dev);
+
 public:
     global_ptr_impl(size_t size, bool read_only = false);
     global_ptr_impl(void *ptr, size_t size, Deleter deleter, bool read_only = false);
@@ -48,7 +51,9 @@ public:
     global_ptr_impl clone() const;
 
     operator bool() const;
+    
     size_t size() const;
+    bool is_allocated() const;
 
     cl_mem to_device(device_impl const *dev);
 };
