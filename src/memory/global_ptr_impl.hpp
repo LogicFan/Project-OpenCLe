@@ -1,64 +1,50 @@
 #pragma once
 
-#include "../util/core_def.hpp"
 #include <CL/cl.h>
 #include <functional>
 #include <memory>
 
-namespace opencle_test {
-void test();
-}
+#include "../util/core_def.hpp"
 
-namespace opencle {
+namespace opencle
+{
+
+class global_ptr_impl;
 class device_impl;
-using device = std::unique_ptr<device_impl>;
 
-/** const indicate read_only, otherwise is read_write **/
-class global_ptr_impl final {
+class global_ptr_impl final
+{
 private:
+    using Deleter = std::function<void(void const *)>;
+
     bool valid_;
     size_t size_;
+    bool read_only_;
 
-    /** host-side memory */
     void *host_ptr_;
-    std::function<void(void const *)> deleter_;
+    Deleter deleter_;
 
-    /** device-side memory */
-    mutable cl_mem device_ptr_;
-    mutable device_impl const *on_device_;
+    cl_mem device_ptr_;
+    device_impl const *on_device_;
 
 public:
-    global_ptr_impl();
-    global_ptr_impl(size_t size);
-
-    /* do not copy the data */
-    global_ptr_impl(void *ptr, size_t size, std::function<void(void const *)> deleter);
+    global_ptr_impl(size_t size, bool read_only = false);
+    global_ptr_impl(void *ptr, size_t size, Deleter deleter, bool read_only = false);
     global_ptr_impl(global_ptr_impl const &rhs) = delete;
     global_ptr_impl(global_ptr_impl &&rhs);
     ~global_ptr_impl();
 
     global_ptr_impl &operator=(global_ptr_impl const &rhs) = delete;
-
     global_ptr_impl &operator=(global_ptr_impl &&rhs);
 
-    void *get();
-    void const *get() const;
-
+    void *get() const;
     void *release();
 
-    global_ptr_impl clone();
     global_ptr_impl clone() const;
 
     operator bool() const;
     size_t size() const;
 
-    /** For device **/
-
-    cl_mem to_device(device const &dev);
     cl_mem to_device(device_impl const *dev);
-    cl_mem to_device(device const &dev) const;
-    cl_mem to_device(device_impl const *dev) const;
-
-    friend void ::opencle_test::test();
 };
 } // namespace opencle
