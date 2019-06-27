@@ -43,7 +43,7 @@ void test()
     opencle::global_ptr_impl output_gp{element_num * sizeof(int), false};
 
     opencle::global_ptr_impl input_1_gp{std::move(input_1_gp_temp)};
-    opencle::global_ptr_impl input_2_gp{input_2_gp.clone()};
+    opencle::global_ptr_impl input_2_gp{input_2_gp_temp.clone()};
 
     assert(output_gp.size() == element_num * sizeof(int));
     assert(output_gp.is_allocated() == false);
