@@ -27,6 +27,10 @@ private:
     cl_mem device_ptr_;
     device_impl const *on_device_;
 
+    void *get_read_write() const;
+    void *get_read_write();
+    void *get_read_only() const;
+
 public:
     global_ptr_impl(size_t size, bool read_only = false);
     global_ptr_impl(void *ptr, size_t size, Deleter deleter, bool read_only = false);
@@ -38,6 +42,7 @@ public:
     global_ptr_impl &operator=(global_ptr_impl &&rhs);
 
     void *get() const;
+    void *get();
     void *release();
 
     global_ptr_impl clone() const;

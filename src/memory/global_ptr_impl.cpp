@@ -36,13 +36,11 @@ global_ptr_impl::global_ptr_impl(void *ptr, size_t size, Deleter deleter, bool r
     return;
 }
 
-#if 0
-
 global_ptr_impl::global_ptr_impl(global_ptr_impl &&rhs)
-    : valid_{rhs.valid_}, size_{rhs.size_}, host_ptr_{rhs.host_ptr_}, deleter_{rhs.deleter_}, device_ptr_{rhs.device_ptr_},
-      on_device_{rhs.on_device_}
+    : valid_{rhs.valid_}, size_{rhs.size_}, read_only_{rhs.read_only_}, host_ptr_{rhs.host_ptr_}, deleter_{rhs.deleter_},
+      device_ptr_{rhs.device_ptr_}, on_device_{rhs.on_device_}
 {
-    logger("global_ptr_impl(move), " << &rhs << " -> " << this);
+    logger("global_ptr_impl(global_ptr_impl &&), create " << this << " from " << &rhs);
     rhs.host_ptr_ = nullptr;
     rhs.deleter_ = nullptr;
     rhs.device_ptr_ = nullptr;
@@ -53,103 +51,124 @@ global_ptr_impl::global_ptr_impl(global_ptr_impl &&rhs)
 global_ptr_impl::~global_ptr_impl()
 {
     logger("~global_ptr_impl, destory " << this);
-    if (host_ptr_)
+    if (host_ptr_ && deleter_)
     {
         deleter_(host_ptr_);
-        logger("Release host-side memory " << host_ptr_ << "!");
-        host_ptr_ = nullptr;
-        deleter_ = nullptr;
+        logger("Release host pointer " << host_ptr_);
     }
 
     if (device_ptr_)
     {
         clReleaseMemObject(device_ptr_);
-        logger("Release device-side memory " << device_ptr_ << "!");
-        device_ptr_ = nullptr;
-        on_device_ = nullptr;
+        logger("Release device pointer " << device_ptr_);
     }
-
-    size_ = 0;
-    valid_ = false;
-    return;
 }
 
 global_ptr_impl &global_ptr_impl::operator=(global_ptr_impl &&rhs)
 {
-    logger("operator=(move), " << &rhs << " -> " << this);
-    ~global_ptr_impl();
+    logger("operator=(global_ptr_impl &&), " << &rhs << " -> " << this);
+    this->~global_ptr_impl();
     new (this) global_ptr_impl(std::move(rhs));
     return *this;
 }
 
+void *global_ptr_impl::get_read_write() const
+{
+    logger("get_read_write() const");
+    cl_int status;
+    if (host_ptr_ && device_ptr_)
+    {
+        status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
+        if (status != CL_SUCCESS)
+        {
+            throw std::runtime_error{"OpenCL runtime error: Cannot read memory "
+                                     "buffer!"};
+        }
+        logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to " << host_ptr_ << " on host");
+    }
+    return host_ptr_;
+}
+
+void *global_ptr_impl::get_read_write()
+{
+    logger("get_read_write()");
+    cl_int status;
+    if (host_ptr_ && device_ptr_)
+    {
+        status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
+        if (status != CL_SUCCESS)
+        {
+            throw std::runtime_error{"OpenCL runtime error: Cannot read memory "
+                                     "buffer!"};
+        }
+        logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to " << host_ptr_ << " on host");
+    }
+    else if (device_ptr_)
+    {
+        host_ptr_ = new char[size_];
+        deleter_ = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
+        logger("Allocate memory " << host_ptr_ << " on host");
+        cl_int status;
+        status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
+        if (status != CL_SUCCESS)
+        {
+            throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
+        }
+        logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to " << host_ptr_ << " on host");
+    }
+    return host_ptr_;
+}
+
+void *global_ptr_impl::get_read_only() const
+{
+    logger("get_read_only() const");
+    return host_ptr_;
+}
+
+void *global_ptr_impl::get() const
+{
+    logger("get() const");
+    if (!valid_)
+    {
+        throw std::runtime_error{"Getting address of an invalid global_ptr"};
+    }
+    else if (read_only_)
+    {
+        return get_read_only();
+    }
+    else
+    {
+        return get_read_write();
+    }
+    return nullptr;
+}
+
 void *global_ptr_impl::get()
 {
-    logger("get");
-    if (valid_)
+    logger("get() const");
+    if (!valid_)
     {
-        if (host_ptr_ && device_ptr_)
-        {
-            cl_int status;
-            status = clEnqueueReadBuffer(on_device_->cmd_queue_, device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
-            if (status != CL_SUCCESS)
-            {
-                throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
-            }
-            logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to host-side!");
-        }
-        else if (host_ptr_)
-        {
-        }
-        else if (device_ptr_)
-        {
-            host_ptr_ = new char[size_];
-            deleter_ = [](void const *ptr) { delete[] static_cast<char const *>(ptr); };
-            cl_int status;
-            status = clEnqueueReadBuffer(on_device_->cmd_queue_, device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
-            if (status != CL_SUCCESS)
-            {
-                throw std::runtime_error{"OpenCL runtime error: Cannot read memory buffer!"};
-            }
-            logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to host-side!");
-        }
-        logger("Get host-side memory " << host_ptr_ << "!");
-        return host_ptr_;
+        throw std::runtime_error{"Getting address of an invalid global_ptr"};
+    }
+    else if (read_only_)
+    {
+        return get_read_only();
     }
     else
     {
-        logger("Get nullptr!");
-        return nullptr;
+        return get_read_write();
     }
     return nullptr;
 }
 
-void const *global_ptr_impl::get() const
-{
-    logger("get const");
-    if (valid_ && host_ptr_)
-    {
-        logger("Get host-side memory " << host_ptr_ << "!");
-        return host_ptr_;
-    }
-    else
-    {
-        logger("Get nullptr!");
-        return nullptr;
-    }
-    return nullptr;
+void *global_ptr_impl::release() {
+    void *temp = get();
+    this->~global_ptr_impl();
+    valid_ = false;
+    return temp;
 }
 
-void *global_ptr_impl::release()
-{
-    logger("release");
-    void *ptr = get();
-    host_ptr_ = nullptr;
-    deleter_ = nullptr;
-    ~global_ptr_impl();
-    global_ptr_impl();
-    logger("Get host-side memory " << ptr << " and release " << this << "!");
-    return ptr;
-}
+#if 0
 
 global_ptr_impl global_ptr_impl::clone()
 {
