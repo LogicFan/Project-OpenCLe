@@ -19,7 +19,7 @@ private:
     cl_command_queue cmd_queue_;
 
     size_t cu_total_;
-    size_t wg_prefer_;
+    size_t wg_max_;
 
     mutable std::atomic<bool> valid_;
     mutable std::atomic<size_t> cu_used_;

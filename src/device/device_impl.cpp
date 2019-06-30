@@ -56,11 +56,19 @@ size_t __get_compute_unit(cl_device_id const &dev_id)
     return static_cast<size_t>(cu_num);
 }
 
-size_t __get_workgroup_perferred_size(cl_device_id const &dev_id)
+size_t __get_workgroup_max_size(cl_device_id const &dev_id)
 {
-    logger("__get_workgroup_perferred_size(cl_device_id const &)");
+    logger("__get_workgroup_max_size(cl_device_id const &)");
     cl_int status;
-    cl_uint cu_num;
+    size_t wg_size;
+    status = clGetDeviceInfo(dev_id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &wg_size, NULL);
+    if (status != CL_SUCCESS)
+    {
+        throw std::runtime_error{"OpenCL runtime error: Cannot get device info!"};
+    }
+    logger("The max number of work-items in work-group is " << wg_size << " on device where device_id is " << dev_id);
+
+    return wg_size;
 }
 } // namespace
 
@@ -68,14 +76,20 @@ namespace opencle
 {
 device_impl::device_impl(cl_device_id const &dev_id)
     : device_{dev_id}, context_{__get_context(device_)},
-      cmd_queue_{__get_command_queue(device_, context_)}, cu_total_{__get_compute_unit(device_)}, valid_{true}, cu_used_{0}
+      cmd_queue_{__get_command_queue(device_, context_)},
+      cu_total_{__get_compute_unit(device_)},
+      wg_max_{__get_workgroup_max_size(device_)},
+      valid_{true}, cu_used_{0}
 {
     logger("device_impl(device_id const &), create " << this);
     return;
 }
 
 device_impl::device_impl(cl_device_id const &dev_id, cl_context const &context, cl_command_queue const &cmd_q)
-    : device_{dev_id}, context_{context}, cmd_queue_{cmd_q}, cu_total_{__get_compute_unit(dev_id)}, valid_{true}, cu_used_{0}
+    : device_{dev_id}, context_{context}, cmd_queue_{cmd_q},
+      cu_total_{__get_compute_unit(dev_id)},
+      wg_max_{__get_workgroup_max_size(device_)},
+      valid_{true}, cu_used_{0}
 {
     logger("device_impl(device_id const &, context const &, command_queue const &), create " << this);
     return;
@@ -130,6 +144,12 @@ void device_impl::compute_unit_usage_increment(int offset)
 {
     logger("computate_unit_usage_increment(int)");
     cu_used_ = cu_used_ + offset;
+}
+
+size_t device_impl::estimate_compute_unit_usage(size_t work_size)
+{
+    logger("estimate_compute_unit_usage");
+    return (work_size / wg_max_) + 1;
 }
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev_impl)
