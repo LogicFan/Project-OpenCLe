@@ -18,10 +18,11 @@ private:
     cl_context context_;
     cl_command_queue cmd_queue_;
 
-    size_t cu_total;
+    size_t cu_total_;
+    size_t wg_prefer_;
 
     mutable std::atomic<bool> valid_;
-    mutable std::atomic<size_t> cu_used;
+    mutable std::atomic<size_t> cu_used_;
 
 public:
     device_impl(cl_device_id const &dev_id);
@@ -39,6 +40,7 @@ public:
     cl_context get_context() const;
     cl_command_queue get_command_queue() const;
     size_t get_compute_unit_available() const; 
+    size_t estimate_compute_unit_usage(size_t work_size);
 
     void compute_unit_usage_increment(int offset);
 

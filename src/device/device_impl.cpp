@@ -55,20 +55,27 @@ size_t __get_compute_unit(cl_device_id const &dev_id)
 
     return static_cast<size_t>(cu_num);
 }
+
+size_t __get_workgroup_perferred_size(cl_device_id const &dev_id)
+{
+    logger("__get_workgroup_perferred_size(cl_device_id const &)");
+    cl_int status;
+    cl_uint cu_num;
+}
 } // namespace
 
 namespace opencle
 {
 device_impl::device_impl(cl_device_id const &dev_id)
     : device_{dev_id}, context_{__get_context(device_)},
-      cmd_queue_{__get_command_queue(device_, context_)}, cu_total{__get_compute_unit(device_)}, valid_{true}, cu_used{0}
+      cmd_queue_{__get_command_queue(device_, context_)}, cu_total_{__get_compute_unit(device_)}, valid_{true}, cu_used_{0}
 {
     logger("device_impl(device_id const &), create " << this);
     return;
 }
 
 device_impl::device_impl(cl_device_id const &dev_id, cl_context const &context, cl_command_queue const &cmd_q)
-    : device_{dev_id}, context_{context}, cmd_queue_{cmd_q}, cu_total{__get_compute_unit(dev_id)}, valid_{true}, cu_used{0}
+    : device_{dev_id}, context_{context}, cmd_queue_{cmd_q}, cu_total_{__get_compute_unit(dev_id)}, valid_{true}, cu_used_{0}
 {
     logger("device_impl(device_id const &, context const &, command_queue const &), create " << this);
     return;
@@ -86,7 +93,7 @@ device_impl::~device_impl()
 bool device_impl::operator<(device_impl const &rhs) const
 {
     logger("operator<(device_impl const &) const, compare " << this << " and " << &rhs);
-    return valid_ * (cu_total - cu_used) < rhs.valid_ * (rhs.cu_total - rhs.cu_used);
+    return valid_ * (cu_total_ - cu_used_) < rhs.valid_ * (rhs.cu_total_ - rhs.cu_used_);
 }
 
 device_impl::operator bool() const
@@ -116,13 +123,13 @@ cl_command_queue device_impl::get_command_queue() const
 size_t device_impl::get_compute_unit_available() const
 {
     logger("get_computate_unit_available() const");
-    return cu_total - cu_used;
+    return cu_total_ - cu_used_;
 }
 
 void device_impl::compute_unit_usage_increment(int offset)
 {
     logger("computate_unit_usage_increment(int)");
-    cu_used = cu_used + offset;
+    cu_used_ = cu_used_ + offset;
 }
 
 std::ostream &operator<<(std::ostream &out, device_impl const &dev_impl)
