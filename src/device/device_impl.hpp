@@ -38,9 +38,9 @@ public:
     cl_device_id get_device_id() const;
     cl_context get_context() const;
     cl_command_queue get_command_queue() const;
-    size_t get_computate_unit_available() const;
+    size_t get_compute_unit_available() const; 
 
-    void computate_unit_usage_increment(int offset);
+    void compute_unit_usage_increment(int offset);
 
     friend std::ostream &operator<<(std::ostream &out, device_impl const &dev_impl);
 };

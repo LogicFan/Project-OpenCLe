@@ -176,12 +176,6 @@ void test()
     }
     std::cout << std::endl;
 
-    size_t cu = dev_impl.get_computate_unit_available();
-    std::cout << cu << std::endl;
-    dev_impl.computate_unit_usage_increment(5);
-    std::cout << dev_impl.get_computate_unit_available() << std::endl;
-    assert(dev_impl.get_computate_unit_available() == cu - 5);
-
     // free resources
     clReleaseKernel(kernel);
     clReleaseProgram(program);

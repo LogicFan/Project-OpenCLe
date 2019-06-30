@@ -41,9 +41,9 @@ cl_command_queue __get_command_queue(cl_device_id const &dev_id, cl_context cons
     return temp;
 }
 
-size_t __get_computate_unit(cl_device_id const &dev_id)
+size_t __get_compute_unit(cl_device_id const &dev_id)
 {
-    logger("__get_computate_unit(cl_device_id const &)");
+    logger("__get_compute_unit(cl_device_id const &)");
     cl_int status;
     cl_uint cu_num;
     status = clGetDeviceInfo(dev_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &cu_num, NULL);
@@ -61,14 +61,14 @@ namespace opencle
 {
 device_impl::device_impl(cl_device_id const &dev_id)
     : device_{dev_id}, context_{__get_context(device_)},
-      cmd_queue_{__get_command_queue(device_, context_)}, cu_total{__get_computate_unit(device_)}, valid_{true}, cu_used{0}
+      cmd_queue_{__get_command_queue(device_, context_)}, cu_total{__get_compute_unit(device_)}, valid_{true}, cu_used{0}
 {
     logger("device_impl(device_id const &), create " << this);
     return;
 }
 
 device_impl::device_impl(cl_device_id const &dev_id, cl_context const &context, cl_command_queue const &cmd_q)
-    : device_{dev_id}, context_{context}, cmd_queue_{cmd_q}, cu_total{__get_computate_unit(dev_id)}, valid_{true}, cu_used{0}
+    : device_{dev_id}, context_{context}, cmd_queue_{cmd_q}, cu_total{__get_compute_unit(dev_id)}, valid_{true}, cu_used{0}
 {
     logger("device_impl(device_id const &, context const &, command_queue const &), create " << this);
     return;
@@ -113,13 +113,13 @@ cl_command_queue device_impl::get_command_queue() const
     return cmd_queue_;
 }
 
-size_t device_impl::get_computate_unit_available() const
+size_t device_impl::get_compute_unit_available() const
 {
     logger("get_computate_unit_available() const");
     return cu_total - cu_used;
 }
 
-void device_impl::computate_unit_usage_increment(int offset)
+void device_impl::compute_unit_usage_increment(int offset)
 {
     logger("computate_unit_usage_increment(int)");
     cu_used = cu_used + offset;
