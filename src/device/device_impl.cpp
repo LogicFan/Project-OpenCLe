@@ -119,8 +119,9 @@ size_t device_impl::get_computate_unit_available() const
     return cu_total - cu_used;
 }
 
-void device_impl::computate_unit_usage_increment(int offset) { 
-    logger("computate_unit_usage_increment(int)"); 
+void device_impl::computate_unit_usage_increment(int offset)
+{
+    logger("computate_unit_usage_increment(int)");
     cu_used = cu_used + offset;
 }
 

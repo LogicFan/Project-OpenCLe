@@ -51,7 +51,7 @@ public:
     global_ptr_impl clone() const;
 
     operator bool() const;
-    
+
     size_t size() const;
     bool is_allocated() const;
 
