@@ -134,10 +134,10 @@ cl_command_queue device_impl::get_command_queue() const
     return cmd_queue_;
 }
 
-size_t device_impl::get_compute_unit_available() const
+int device_impl::get_compute_unit_available() const
 {
     logger("get_computate_unit_available() const");
-    return cu_total_ - cu_used_;
+    return static_cast<int>(cu_total_) - static_cast<int>(cu_used_);
 }
 
 void device_impl::compute_unit_usage_increment(int offset)
