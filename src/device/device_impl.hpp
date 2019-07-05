@@ -21,7 +21,7 @@ private:
     size_t cu_total_;
 
     mutable std::atomic<bool> valid_;
-    mutable std::atomic<size_t> cu_used_;
+    std::atomic<size_t> cu_used_;
 
 public:
     device_impl(cl_device_id const &dev_id);
