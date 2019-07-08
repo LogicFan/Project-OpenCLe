@@ -40,7 +40,7 @@ build/task_impl.o:											\
 
 # combine all object files into single object file
 
-build/opencle.o:											\
+bin/opencle.o:											\
 		build/device_impl.o									\
 		build/device.o 										\
 		build/global_ptr_impl.o 							\
@@ -88,6 +88,8 @@ build:
 
 bin:
 	mkdir bin
+
+# clean
 
 clean:
 	rm -rf build
