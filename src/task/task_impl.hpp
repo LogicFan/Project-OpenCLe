@@ -39,7 +39,7 @@ public:
     task_impl &operator=(task_impl &&rhs) = delete;
     operator bool();
 
-    void compile(device_impl *dev_impl, std::string const &func_name);
+    void compile(device_impl *dev_impl, std::string const &kernel_name);
     void set_args(Args &&args);
     void exec(size_t dim, size_t global_size[], size_t local_size[]);
 };

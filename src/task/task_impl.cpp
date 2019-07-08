@@ -29,7 +29,7 @@ task_impl::operator bool()
     return valid_ == 7;
 }
 
-void task_impl::compile(device_impl *dev_impl, std::string const &func_name)
+void task_impl::compile(device_impl *dev_impl, std::string const &kernel_name)
 {
     on_device_ = dev_impl;
 
@@ -51,11 +51,11 @@ void task_impl::compile(device_impl *dev_impl, std::string const &func_name)
         throw std::runtime_error{"OpenCL runtime error: Cannot build program"};
     }
 
-    kernel_ = clCreateKernel(program_, func_name.c_str(), &status);
+    kernel_ = clCreateKernel(program_, kernel_name.c_str(), &status);
     if (status != CL_SUCCESS)
     {
         valid_ = 0;
-        throw std::runtime_error{"OpenCL runtime error: Cannot create kernel of " + func_name};
+        throw std::runtime_error{"OpenCL runtime error: Cannot create kernel of " + kernel_name};
     }
 
     valid_ = valid_ | 2;
