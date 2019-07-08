@@ -21,6 +21,7 @@ private:
     char valid_;
 
     std::string source_;
+    std::string kernel_name_;
 
     cl_program program_;
     cl_kernel kernel_;
@@ -30,7 +31,7 @@ private:
     static bool is_valid_parallel_size(size_t dim, size_t global_size[], size_t local_size[]); 
 
 public:
-    task_impl(std::string const &source);
+    task_impl(std::string const &source, std::string const &kernel_name);
     task_impl(task_impl const &rhs) = delete;
     task_impl(task_impl &&rhs) = delete;
     ~task_impl();
@@ -39,7 +40,7 @@ public:
     task_impl &operator=(task_impl &&rhs) = delete;
     operator bool();
 
-    void compile(device_impl *dev_impl, std::string const &kernel_name);
+    void compile(device_impl *dev_impl);
     void set_args(Args &&args);
     void exec(size_t dim, size_t global_size[], size_t local_size[]);
 };

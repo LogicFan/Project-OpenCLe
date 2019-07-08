@@ -68,9 +68,9 @@ void test()
     cl_mem input_2_buf = input_2_gp.to_device(&dev_impl);
     cl_mem output_buf = output_gp.to_device(&dev_impl);
 
-    opencle::task_impl vec_add_task{programSource};
+    opencle::task_impl vec_add_task{programSource, "vecadd"};
 
-    vec_add_task.compile(&dev_impl, "vecadd");
+    vec_add_task.compile(&dev_impl);
 
     std::vector<std::pair<size_t, void *>> args{
         std::pair<size_t, void *>{sizeof(cl_mem), static_cast<void *>(&input_1_buf)}, 

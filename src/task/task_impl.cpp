@@ -10,8 +10,8 @@
 
 namespace opencle
 {
-task_impl::task_impl(std::string const &source)
-    : valid_{1}, source_{source},
+task_impl::task_impl(std::string const &source, std::string const &kernel_name)
+    : valid_{1}, source_{source}, kernel_name_{kernel_name},
       program_{nullptr}, kernel_{nullptr}, on_device_{nullptr}
 {
     logger("task_impl(std::string const &), create " << this);
@@ -29,7 +29,7 @@ task_impl::operator bool()
     return valid_ == 7;
 }
 
-void task_impl::compile(device_impl *dev_impl, std::string const &kernel_name)
+void task_impl::compile(device_impl *dev_impl)
 {
     on_device_ = dev_impl;
 
@@ -51,11 +51,11 @@ void task_impl::compile(device_impl *dev_impl, std::string const &kernel_name)
         throw std::runtime_error{"OpenCL runtime error: Cannot build program"};
     }
 
-    kernel_ = clCreateKernel(program_, kernel_name.c_str(), &status);
+    kernel_ = clCreateKernel(program_, kernel_name_.c_str(), &status);
     if (status != CL_SUCCESS)
     {
         valid_ = 0;
-        throw std::runtime_error{"OpenCL runtime error: Cannot create kernel of " + kernel_name};
+        throw std::runtime_error{"OpenCL runtime error: Cannot create kernel of " + kernel_name_};
     }
 
     valid_ = valid_ | 2;
