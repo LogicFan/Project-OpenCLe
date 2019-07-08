@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 
-#include "../util/logger/logger.hpp"
 #include "../util/core_def.hpp"
 
 // OpenCL C code
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
             "OpenCL runtime error: Cannot get platform info"};
     }
 
-    logger("Platform is " << platform_name);
+    std::cout << "Platform is " << platform_name << std::endl;
 
     // initialize device
     cl_device_id device;
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
             "OpenCL runtime error: Cannot get device info"};
     }
 
-    logger("Device is " << device_name);
+    std::cout << "Device is " << device_name << std::endl;
 
     // initialize context
     cl_context context = clCreateContext(NULL, 1, &device, NULL, NULL, &status);

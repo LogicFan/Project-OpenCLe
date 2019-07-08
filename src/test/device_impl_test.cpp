@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 
 #include "../util/core_def.hpp"
-#include "../util/logger/logger.hpp"
 #include "../device/device_impl.hpp"
 
 // OpenCL C code
@@ -67,7 +67,7 @@ void test()
         throw std::runtime_error{"OpenCL runtime error: Cannot get platform info"};
     }
 
-    logger("Platform is " << platform_name);
+    std::cout << "Platform is " << platform_name << std::endl;
 
     // initialize device
     cl_device_id device;

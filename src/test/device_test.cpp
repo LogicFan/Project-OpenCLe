@@ -3,13 +3,13 @@
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 
 #include "../device/device_impl.hpp"
 #include "../device/device.hpp"
 #include "../memory/global_ptr_impl.hpp"
 #include "../task/task_impl.hpp"
 #include "../util/core_def.hpp"
-#include "../util/logger/logger.hpp"
 
 // OpenCL C code
 std::string programSource = "__kernel \n"
