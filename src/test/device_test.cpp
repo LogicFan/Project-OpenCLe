@@ -53,11 +53,15 @@ void test()
 
     cl_int status;
 
+    std::vector<opencle::device> const &dev_vector = opencle::device::get_device_list();
+
     opencle::device::create_device_list(opencle::device_type::ALL);
     opencle::device::sort_device_list();
     opencle::device const &dev = opencle::device::get_top_device();
 
     opencle::device_impl &dev_impl = *(dev.get_device_impl());
+
+    assert(dev_vector[0].is_equal(dev));
 
     // initialize and allocate device side memory
     cl_mem input_1_buf = input_1_gp.to_device(&dev_impl);

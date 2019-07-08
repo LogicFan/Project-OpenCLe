@@ -108,6 +108,10 @@ void device::create_device_list(device_type type)
     is_device_list_created_ = true;
 }
 
+std::vector<device> const &device::get_device_list() {
+    return device_list_;
+}
+
 device const &device::get_top_device()
 {
     return *device_list_.begin();
@@ -140,6 +144,10 @@ device &device::operator=(device &&rhs)
 bool device::operator<(device const &rhs) const
 {
     return impl_->operator<(*(rhs.impl_));
+}
+
+bool device::is_equal(device const &rhs) const {
+    return impl_->get_device_id() == rhs.impl_->get_device_id();
 }
 
 int device::get_compute_unit_available() const

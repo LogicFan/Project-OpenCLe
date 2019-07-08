@@ -32,6 +32,7 @@ private:
 
 public:
     static void create_device_list(device_type type = device_type::DEFAULT);
+    static std::vector<device> const &get_device_list();
     static device const &get_top_device();
     static void sort_device_list();
 
@@ -42,11 +43,13 @@ public:
     device &operator=(device const &rhs) = delete;
     device &operator=(device &&rhs);
     bool operator<(device const &rhs) const;
+    bool is_equal(device const &rhs) const;
 
     int get_compute_unit_available() const;
 
     // for test purpose
-    std::unique_ptr<device_impl> const &get_device_impl() const {
+    std::unique_ptr<device_impl> const &get_device_impl() const
+    {
         return impl_;
     }
 
