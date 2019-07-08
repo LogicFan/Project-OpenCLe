@@ -1,3 +1,5 @@
+#define NDEBUG
+
 #include <stdexcept>
 #include <type_traits>
 #include <utility>

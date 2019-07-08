@@ -1,3 +1,5 @@
+#define NDEBUG
+
 #include <memory.h>
 #include <stdexcept>
 #include <stdlib.h>

@@ -1,3 +1,5 @@
+#define NDEBUG
+
 #include "task_impl.hpp"
 
 #include <utility>
