@@ -42,8 +42,10 @@ void test()
     opencle::global_ptr_impl input_2_gp_temp{static_cast<void *>(input_2), element_num * sizeof(int), deleter, true};
     opencle::global_ptr_impl output_gp{element_num * sizeof(int), false};
 
-    opencle::global_ptr_impl input_1_gp{std::move(input_1_gp_temp)};
-    opencle::global_ptr_impl input_2_gp{input_2_gp_temp.clone()};
+    std::unique_ptr<opencle::global_ptr_impl> input_2_gp_clone = input_2_gp_temp.clone();
+
+    opencle::global_ptr_impl &input_1_gp = input_1_gp_temp;
+    opencle::global_ptr_impl &input_2_gp = *input_2_gp_clone;
 
     assert(output_gp.size() == element_num * sizeof(int));
     assert(output_gp.is_allocated() == false);
