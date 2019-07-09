@@ -72,24 +72,6 @@ global_ptr_impl::~global_ptr_impl()
 //     return *this;
 // }
 
-void *global_ptr_impl::get_read_write() const
-{
-    logger("get_read_write() const");
-    cl_int status;
-    if (host_ptr_ && device_ptr_)
-    {
-        status = clEnqueueReadBuffer(on_device_->get_command_queue(), device_ptr_, CL_TRUE, 0, size_, host_ptr_, 0, NULL, NULL);
-        if (status != CL_SUCCESS)
-        {
-            valid_ = false;
-            throw std::runtime_error{"OpenCL runtime error: Cannot read memory "
-                                     "buffer!"};
-        }
-        logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to " << host_ptr_ << " on host");
-    }
-    return host_ptr_;
-}
-
 void *global_ptr_impl::get_read_write()
 {
     logger("get_read_write()");
@@ -121,33 +103,15 @@ void *global_ptr_impl::get_read_write()
     return host_ptr_;
 }
 
-void *global_ptr_impl::get_read_only() const
+void *global_ptr_impl::get_read_only()
 {
-    logger("get_read_only() const");
+    logger("get_read_only()");
     return host_ptr_;
-}
-
-void *global_ptr_impl::get() const
-{
-    logger("get() const");
-    if (!valid_)
-    {
-        throw std::runtime_error{"Getting address of an invalid global_ptr"};
-    }
-    else if (read_only_)
-    {
-        return get_read_only();
-    }
-    else
-    {
-        return get_read_write();
-    }
-    return nullptr;
 }
 
 void *global_ptr_impl::get()
 {
-    logger("get() const");
+    logger("get()");
     if (!valid_)
     {
         throw std::runtime_error{"Getting address of an invalid global_ptr"};
