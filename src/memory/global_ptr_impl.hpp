@@ -1,3 +1,5 @@
+#define NDEBUG
+
 #pragma once
 
 #include <CL/cl.h>
@@ -38,17 +40,17 @@ public:
     global_ptr_impl(size_t size, bool read_only = false);
     global_ptr_impl(void *ptr, size_t size, Deleter deleter, bool read_only = false);
     global_ptr_impl(global_ptr_impl const &rhs) = delete;
-    global_ptr_impl(global_ptr_impl &&rhs);
+    global_ptr_impl(global_ptr_impl &&rhs) = delete;
     ~global_ptr_impl();
 
     global_ptr_impl &operator=(global_ptr_impl const &rhs) = delete;
-    global_ptr_impl &operator=(global_ptr_impl &&rhs);
+    global_ptr_impl &operator=(global_ptr_impl &&rhs) = delete;
 
     void *get() const;
     void *get();
     void *release();
 
-    global_ptr_impl clone() const;
+    std::unique_ptr<global_ptr_impl> clone() const;
 
     operator bool() const;
 

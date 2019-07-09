@@ -1,5 +1,3 @@
-#define NDEBUG
-
 #include <memory.h>
 #include <stdexcept>
 #include <stdlib.h>
@@ -38,17 +36,17 @@ global_ptr_impl::global_ptr_impl(void *ptr, size_t size, Deleter deleter, bool r
     return;
 }
 
-global_ptr_impl::global_ptr_impl(global_ptr_impl &&rhs)
-    : valid_{rhs.valid_}, size_{rhs.size_}, read_only_{rhs.read_only_}, host_ptr_{rhs.host_ptr_}, deleter_{rhs.deleter_},
-      device_ptr_{rhs.device_ptr_}, on_device_{rhs.on_device_}
-{
-    logger("global_ptr_impl(global_ptr_impl &&), create " << this << " from " << &rhs);
-    rhs.host_ptr_ = nullptr;
-    rhs.deleter_ = nullptr;
-    rhs.device_ptr_ = nullptr;
-    rhs.on_device_ = nullptr;
-    return;
-}
+// global_ptr_impl::global_ptr_impl(global_ptr_impl &&rhs)
+//     : valid_{rhs.valid_}, size_{rhs.size_}, read_only_{rhs.read_only_}, host_ptr_{rhs.host_ptr_}, deleter_{rhs.deleter_},
+//       device_ptr_{rhs.device_ptr_}, on_device_{rhs.on_device_}
+// {
+//     logger("global_ptr_impl(global_ptr_impl &&), create " << this << " from " << &rhs);
+//     rhs.host_ptr_ = nullptr;
+//     rhs.deleter_ = nullptr;
+//     rhs.device_ptr_ = nullptr;
+//     rhs.on_device_ = nullptr;
+//     return;
+// }
 
 global_ptr_impl::~global_ptr_impl()
 {
@@ -66,13 +64,13 @@ global_ptr_impl::~global_ptr_impl()
     }
 }
 
-global_ptr_impl &global_ptr_impl::operator=(global_ptr_impl &&rhs)
-{
-    logger("operator=(global_ptr_impl &&), " << &rhs << " -> " << this);
-    this->~global_ptr_impl();
-    new (this) global_ptr_impl(std::move(rhs));
-    return *this;
-}
+// global_ptr_impl &global_ptr_impl::operator=(global_ptr_impl &&rhs)
+// {
+//     logger("operator=(global_ptr_impl &&), " << &rhs << " -> " << this);
+//     this->~global_ptr_impl();
+//     new (this) global_ptr_impl(std::move(rhs));
+//     return *this;
+// }
 
 void *global_ptr_impl::get_read_write() const
 {
@@ -180,7 +178,7 @@ void *global_ptr_impl::release()
     return temp;
 }
 
-global_ptr_impl global_ptr_impl::clone() const
+std::unique_ptr<global_ptr_impl> global_ptr_impl::clone() const
 {
     logger("clone() const");
     if (!valid_)
@@ -204,20 +202,20 @@ global_ptr_impl global_ptr_impl::clone() const
         }
         logger("Synchronize memory " << device_ptr_ << " on " << *on_device_ << " to " << new_ptr << " on host");
 
-        return global_ptr_impl{new_ptr, size_, new_deleter};
+        return std::make_unique<global_ptr_impl>(new_ptr, size_, new_deleter);
     }
     else if (host_ptr_)
     {
         memcpy(new_ptr, host_ptr_, size_);
         logger("Copy memory from " << host_ptr_ << " to " << new_ptr);
 
-        return global_ptr_impl{new_ptr, size_, new_deleter};
+        return std::make_unique<global_ptr_impl>(new_ptr, size_, new_deleter);
     }
     else
     {
-        return global_ptr_impl{size_};
+        return std::make_unique<global_ptr_impl>(size_);
     }
-    return global_ptr_impl{0};
+    return {};
 }
 
 global_ptr_impl::operator bool() const
