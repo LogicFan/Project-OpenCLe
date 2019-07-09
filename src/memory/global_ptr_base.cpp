@@ -53,7 +53,8 @@ size_t global_ptr_base::impl_size() const
     return impl_->size();
 }
 
-bool global_ptr_base::impl_is_allocated() const {
+bool global_ptr_base::impl_is_allocated() const
+{
     return impl_->is_allocated();
 }
 
