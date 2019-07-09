@@ -3,10 +3,12 @@ test_dir = build/test
 
 # run test
 
-test:	$(test_dir)/device_impl_test						\
+test:	$(test_dir)/basic_test								\
+		$(test_dir)/device_impl_test						\
 		$(test_dir)/global_ptr_impl_test					\
 		$(test_dir)/task_impl_test							\
 		$(test_dir)/device_test
+	$(test_dir)/basic_test
 	$(test_dir)/device_impl_test
 	$(test_dir)/global_ptr_impl_test
 	$(test_dir)/task_impl_test
